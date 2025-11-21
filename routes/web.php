@@ -20,6 +20,7 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\DocumentAndNoteController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FixedCostController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\FacturaPosController;
 use App\Http\Controllers\GroupTaxController;
@@ -59,6 +60,7 @@ use App\Http\Controllers\StockAdjustmentController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\TaxonomyController;
 use App\Http\Controllers\TaxRateController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\TiendaNubeController;
 use App\Http\Controllers\TransactionPaymentController;
 use App\Http\Controllers\TypesOfServiceController;
@@ -169,10 +171,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
 
 
-    // Ruta para generar el enlace (protegida por autenticación)
+    // Ruta para generar el enlace (protegida por autenticaciÃ³n)
     Route::get('/generar-enlace-factura/{id}', [FacturaController::class, 'generarEnlaceFactura'])->name('generar.enlace.factura');
     
-    // Ruta pública para acceder a los archivos (si es necesario)
+    // Ruta pÃºblica para acceder a los archivos (si es necesario)
     Route::get('/facturas/{filename}', function ($filename) {
         $path = storage_path('app/facturas/' . $filename);
         return response()->file($path);
@@ -255,6 +257,14 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/products/toggle-woocommerce-sync', [ProductController::class, 'toggleWooCommerceSync']);
 
     Route::resource('products', ProductController::class);
+
+    // Materials (Insumos)
+    Route::get('/materials/list', [MaterialController::class, 'index']);
+    Route::post('/materials/adjust-stock/{id}', [MaterialController::class, 'adjustStock']);
+    Route::get('/materials/products-options', [MaterialController::class, 'productsOptions']);
+    Route::get('/products/materials-options', [MaterialController::class, 'materialsOptions']);
+    Route::resource('materials', MaterialController::class);
+    Route::resource('fixed-costs', FixedCostController::class);
     Route::post('/store-proformas-orders', [SellPosController::class, 'storeProformasFromOrders'])->name('store.proformas.orders');
     Route::get('/toggle-subscription/{id}', 'SellPosController@toggleRecurringInvoices');
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
@@ -362,6 +372,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/reports/get-profit/{by?}', [ReportController::class, 'getProfit']);
     Route::get('/reports/items-report', [ReportController::class, 'itemsReport']);
     Route::get('/reports/get-stock-value', [ReportController::class, 'getStockValue']);
+    Route::get('/reports/materials-cost', [ReportController::class, 'materialsCostReport']);
 
     Route::get('business-location/activate-deactivate/{location_id}', [BusinessLocationController::class, 'activateDeactivateLocation']);
 
@@ -605,3 +616,5 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
     Route::get('/sells/invoice-url/{id}', [SellPosController::class, 'showInvoiceUrl']);
     Route::get('/show-notification/{id}', [HomeController::class, 'showNotification']);
 });
+
+

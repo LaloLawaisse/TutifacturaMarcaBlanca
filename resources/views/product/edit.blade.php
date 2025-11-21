@@ -109,12 +109,30 @@
               </div>
             </div>
 
-            <div class="col-sm-4">
-              <div class="form-group">
+        <div class="col-sm-4">
+            <div class="form-group">
                 {!! Form::label('product_locations', __('business.business_locations') . ':') !!} @show_tooltip(__('lang_v1.product_location_help'))
                   {!! Form::select('product_locations[]', $business_locations, $product->product_locations->pluck('id'), ['class' => 'form-control select2', 'multiple', 'id' => 'product_locations']); !!}
               </div>
             </div>
+        <div class="col-sm-8">
+            <div class="form-group">
+                {!! Form::label('materiales', 'Insumos vinculados:') !!}
+                {!! Form::select('materiales[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'materiales_select']) !!}
+                <p class="help-block">Seleccione los insumos usados para fabricar este producto.</p>
+                <div id="materiales_rows" class="table-responsive" style="margin-top:10px;">
+                    <table class="table table-bordered" id="materiales_table">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th style="width:120px;">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
             <div class="clearfix"></div>
             
@@ -387,4 +405,84 @@
       __page_leave_confirmation('#product_add_form');
     });
   </script>
+@endsection
+@section('javascript')
+    @parent
+    <script>
+        $(function(){
+            var materialQuantities = @json($material_quantities ?? []);
+            var $materialsSelect = $('#materiales_select');
+            var $materialsTableBody = $('#materiales_table tbody');
+
+            function materialRowId(id) {
+                return 'material-row-' + id;
+            }
+
+            function addMaterialRow(data, qty) {
+                var id = data.id;
+                var text = data.text;
+                qty = qty || 1;
+
+                if (!id || !text) {
+                    return;
+                }
+
+                if ($('#' + materialRowId(id)).length) {
+                    return;
+                }
+
+                var rowHtml = '<tr id="' + materialRowId(id) + '" data-material-id="' + id + '">'
+                    + '<td>' + $('<div>').text(text).html() + '</td>'
+                    + '<td><input type="number" class="form-control input_number material-qty-input" '
+                    + 'name="materiales_qty[' + id + ']" min="0" step="0.01" value="' + qty + '"></td>'
+                    + '</tr>';
+
+                $materialsTableBody.append(rowHtml);
+            }
+
+            function removeMaterialRow(id) {
+                $('#' + materialRowId(id)).remove();
+            }
+
+            var selectedMaterials = @json($product->materiales ?? []);
+            $materialsSelect.select2({
+                ajax: {
+                    url: '{{ url('/products/materials-options') }}',
+                    dataType: 'json', delay: 250,
+                    data: function (params) { return { q: params.term } },
+                    processResults: function (data) { return data; },
+                    cache: true
+                },
+                placeholder: 'Buscar insumos...', minimumInputLength: 1, width: '100%'
+            }).on('select2:select', function (e) {
+                var data = e.params.data || {};
+                var id = data.id;
+                var qty = 1;
+                if (id && materialQuantities[id] !== undefined) {
+                    qty = materialQuantities[id];
+                }
+                addMaterialRow(data, qty);
+            }).on('select2:unselect', function (e) {
+                var data = e.params.data || {};
+                if (data.id) {
+                    removeMaterialRow(data.id);
+                }
+            });
+            if (selectedMaterials && selectedMaterials.length) {
+                $.ajax({
+                    url: '{{ url('/products/materials-options') }}',
+                    data: { ids: selectedMaterials.join(',') },
+                    success: function(result){
+                        var $sel = $materialsSelect;
+                        (result.results || []).forEach(function(opt){
+                            var option = new Option(opt.text, opt.id, true, true);
+                            $sel.append(option).trigger('change');
+                            var qty = materialQuantities[opt.id] !== undefined ? materialQuantities[opt.id] : 1;
+                            addMaterialRow({id: opt.id, text: opt.text}, qty);
+                        });
+                    }
+                });
+            }
+        });
+    </script>
 @endsection

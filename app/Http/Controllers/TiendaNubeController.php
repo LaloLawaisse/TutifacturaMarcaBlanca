@@ -25,7 +25,7 @@ class TiendaNubeController extends Controller
             'client_secret' => env('TIENDANUBE_CLIENT_SECRET'),
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => 'https://app.trevitsoft.com/tiendanube/oauth/callback',
+            'redirect_uri' => 'https://app.tutifactura.com/tiendanube/oauth/callback',
         ]);
         
         Log::info('Redirect URI generado por route()', [
@@ -92,7 +92,7 @@ class TiendaNubeController extends Controller
     
         $response = Http::withHeaders([
             'Authentication' => 'bearer ' . $accessToken, // ← Asegurate que esto esté bien formateado
-            'User-Agent' => 'Trevitsoft (contacto@trevitsoft.com)',
+            'User-Agent' => 'TutiFactura (contacto@tutifactura.com)',
         ])->get("https://api.tiendanube.com/v1/{$storeId}/orders");
 
     

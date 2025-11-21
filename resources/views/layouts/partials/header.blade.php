@@ -3,13 +3,13 @@
 
 <div
     class="tw-transition-all tw-duration-5000 tw-border-b tw-bg-gradient-to-r tw-shrink-0 lg:tw-h-15 tw-border-primary-500/30 no-print"
-    style="background: linear-gradient(to right, #005a5a, #005a5a)">
+    style="background: linear-gradient(to right, #ff006b, #ff006b)">
     <div class="tw-px-5 tw-py-3">
         <div class="tw-flex tw-items-start tw-justify-between tw-gap-6 lg:tw-items-center">
             <div class="tw-flex tw-items-center tw-gap-3">
                 <button type="button" 
                     class="small-view-button xl:tw-w-20 lg:tw-hidden tw-inline-flex tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-text-white tw-transition-all tw-duration-200 tw-p-1.5 tw-rounded-lg tw-ring-1 hover:tw-text-white tw-ring-white/10"
-                    style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                    style="background-color: #ff006b; hover:background-color: #e5005f;">
                     <span class="tw-sr-only">
                         Sidebar Menu
                     </span>
@@ -26,7 +26,7 @@
                 <button type="button"
                     <button type="button"
                         class="side-bar-collapse tw-hidden lg:tw-inline-flex tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-text-white tw-transition-all tw-duration-200 tw-p-1.5 tw-rounded-lg tw-ring-1 hover:tw-text-white tw-ring-white/10"
-                        style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                        style="background-color: #ff006b; hover:background-color: #e5005f;">
 
                     <span class="tw-sr-only">
                         Collapse Sidebar
@@ -64,7 +64,7 @@
                 <button id="btnCalculator" title="@lang('lang_v1.calculator')" data-content='@include('layouts.partials.calculator')'
                     type="button" data-trigger="click" data-html="true" data-placement="bottom" data-toggle="popover"
                     class="tw-hidden md:tw-inline-flex tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-text-white tw-transition-all tw-duration-200 tw-p-1.5 tw-rounded-lg tw-ring-1 hover:tw-text-white tw-ring-white/10"
-                    style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                    style="background-color: #ff006b; hover:background-color: #e5005f;">
                     <span class="tw-sr-only" aria-hidden="true">
                         Calculator
                     </span>
@@ -87,7 +87,7 @@
                     @can('sell.create')
                         <a href="{{ action([\App\Http\Controllers\SellPosController::class, 'create']) }}"
                             class="sm:tw-inline-flex tw-transition-all tw-duration-200 tw-gap-2 tw-py-1.5 tw-px-3 tw-rounded-lg tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-ring-1 tw-ring-white/10 hover:tw-text-white tw-text-white"
-                            style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                            style="background-color: #ff006b; hover:background-color: #e5005f;">
                             <svg aria-hidden="true" class="tw-size-5 tw-hidden md:tw-block" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -108,7 +108,7 @@
                     <button type="button" type="button" id="view_todays_profit" title="{{ __('home.todays_profit') }}"
                         data-toggle="tooltip" data-placement="bottom"
                         class="tw-hidden sm:tw-inline-flex tw-items-center tw-ring-1 tw-ring-white/10 tw-justify-center tw-text-sm tw-font-medium tw-text-white hover:tw-text-white tw-transition-all tw-duration-200 tw-p-1.5 tw-rounded-lg"
-                        style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                        style="background-color: #ff006b; hover:background-color: #e5005f;">
                         <span class="tw-sr-only">
                             Today's Profit
                         </span>
@@ -126,7 +126,7 @@
 
                 <button type="button"
                     class="tw-hidden lg:tw-inline-flex tw-transition-all tw-ring-1 tw-ring-white/10 tw-duration-200 tw-py-1.5 tw-px-3 tw-rounded-lg tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-text-white hover:tw-text-white tw-font-mono"
-                    style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                    style="background-color: #ff006b; hover:background-color: #e5005f;">
                     {{ @format_date('now') }}
                 </button>
 
@@ -137,7 +137,7 @@
                 <details class="tw-dw-dropdown tw-relative tw-inline-block tw-text-left">
                     <summary data-toggle="popover"
                         class="tw-dw-m-1 tw-inline-flex tw-transition-all tw-ring-1 tw-ring-white/10 tw-cursor-pointer tw-duration-200 tw-py-1.5 tw-px-3 tw-rounded-lg tw-items-center tw-justify-center tw-text-sm tw-font-medium tw-text-white hover:tw-text-white tw-gap-1"
-                        style="background-color: #005a5a; hover:background-color: #3cc5fe;">
+                        style="background-color: #ff006b; hover:background-color: #e5005f;">
                         <span class="tw-hidden md:tw-block">{{ Auth::User()->first_name }} {{ Auth::User()->last_name }}</span>
 
                         <svg  xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="tw-size-5"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" /></svg>

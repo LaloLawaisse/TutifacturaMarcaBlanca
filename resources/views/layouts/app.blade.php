@@ -148,7 +148,7 @@
         @endif
         <div>
         <div id="whatsapp-button">
-            <a href="https://api.whatsapp.com/send/?phone=%2B5493573514309&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20Trevitsoft.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
+            <a href="https://api.whatsapp.com/send/?phone=%2B5491138752594&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20Tutifactura.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
             </a>
         </div>
@@ -220,63 +220,9 @@
         box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     }
 
-    
+
 
 
 </style>
-
-<style>
-      :root {
-        --color-primary: rgba(0, 90, 90, 1);
-        --color-secondary: rgba(60, 197, 254, 1);
-      }
-    
-      .tw-bg-primary-600,
-      .btn-primary,
-      .bg-primary {
-        background-color: var(--color-primary) !important;
-      }
-    
-      .tw-bg-primary-600:hover,
-      .btn-primary:hover {
-        background-color: rgba(0, 70, 70, 1) !important;
-      }
-    
-      .tw-text-primary-800,
-      .text-primary {
-        color: var(--color-primary) !important;
-      }
-    
-      .tw-border-primary,
-      .border-primary {
-        border-color: var(--color-primary) !important;
-      }
-    
-      /* Colores secundarios */
-      .tw-bg-secondary,
-      .bg-secondary {
-        background-color: var(--color-secondary) !important;
-      }
-    
-      .tw-text-secondary,
-      .text-secondary {
-        color: var(--color-secondary) !important;
-      }
-    
-      .tw-border-secondary,
-      .border-secondary {
-        border-color: var(--color-secondary) !important;
-      }
-    
-      /* Gradiente principal */
-      .bg-gradient-primary {
-        background: linear-gradient(
-          to right,
-          rgba(0, 90, 90, 1),
-          rgba(60, 197, 254, 1)
-        ) !important;
-      }
-</style>
-
 
 </html>

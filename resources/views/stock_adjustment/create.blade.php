@@ -84,7 +84,7 @@
                 </button>
                 
                 <!-- Botón para WooCommerce -->
-                <button type="button" onclick="window.open('https://app.trevitsoft.com/woocommerce', '_blank')"
+                <button type="button" onclick="window.open('https://app.tutifactura.com/woocommerce', '_blank')"
                     class="btn btn-light d-flex align-items-center justify-content-center"
                     style="border: 1px solid #ccc; padding: 10px 15px; margin-left: 20px;">
                     <img src="{{ asset('images/woocommerce-logo.png') }}" alt="WooCommerce"
@@ -202,7 +202,7 @@
                     <!-- Sección de autorización de MercadoLibre -->
                     <div id="authSectionML" style="display: none;">
                         <p>Para conectar tu cuenta de MercadoLibre, necesitas autorizar la aplicación.</p>
-                        <a href="https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=776528488475123&redirect_uri=https://app.trevitsoft.com/callback/"
+                        <a href="https://auth.mercadolibre.com.ar/authorization?response_type=code&client_id=776528488475123&redirect_uri=https://app.tutifactura.com/callback/"
                            class="btn btn-warning btn-block" target="_blank">
                             Autorizar aplicación
                         </a>
@@ -309,7 +309,7 @@
                     <!-- Sección de autorización de MercadoPago -->
                     <div id="authSectionMP" style="display: none;">
                         <p>Para conectar tu cuenta de MercadoPago, necesitas autorizar la aplicación.</p>
-                        <a href="https://auth.mercadopago.com.ar/authorization?response_type=code&client_id=6815763552830505&redirect_uri=https://app.trevitsoft.com/callbackMP/"
+                        <a href="https://auth.mercadopago.com.ar/authorization?response_type=code&client_id=6815763552830505&redirect_uri=https://app.tutifactura.com/callbackMP/"
                            class="btn btn-warning btn-block" target="_blank">
                             Autorizar aplicación
                         </a>

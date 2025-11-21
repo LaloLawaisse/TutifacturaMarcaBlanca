@@ -1355,5 +1355,8 @@ return [
     'in_stock' => 'en stock',
     'cogs' => 'COGS:',
     'cogs_help_text' => 'Costo de los bienes vendidos = Inventario inicial (stock de apertura) + compras − inventario final (stock de cierre)',
+    'materials_cost_report' => 'Reporte de costo de insumos',
+    'materials_cost_purchased' => 'Costo de insumos comprados',
+    'materials_cost_sold' => 'Costo de insumos vendidos',
+    'materials_cost_help' => 'Usa el rango de fechas para calcular el costo de insumos comprados y consumidos en ventas.',
 ];
-

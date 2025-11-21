@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subscripción Trevitsoft</title>
+  <title>Subscripción Tutifactura</title>
   <!-- Importamos la fuente Poppins desde Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -55,7 +55,7 @@
 <body>
   <div class="payment-container">
     <div class="payment-header">
-      <h1>Trevitsoft</h1>
+      <h1>Tutifactura</h1>
     </div>
     <div id="cardPaymentBrick_container"></div>
     <div id="paymentErrors" class="error-message"></div>
@@ -68,13 +68,13 @@
     $planId = request('planId') ?? 1;
     switch ($planId) {
         case 1:
-            $amount = 25000;
+            $amount = 23000;
             break;
         case 2:
-            $amount = 50000;
+            $amount = 29000;
             break;
         case 3:
-            $amount = 75000;
+            $amount = 69000;
             break;
         case 5:
             $amount = 144000;
@@ -146,14 +146,14 @@
 
               } else {
                 // Flujo por defecto (register): redirección según el monto (y paquete) obtenido.
-                if ({{ $amount }} === 25000) {
-                  redirectUrl = 'https://app.trevitsoft.com/business/register?package=1';
-                } else if ({{ $amount }} === 50000) {
-                  redirectUrl = 'https://app.trevitsoft.com/business/register?package=2';
-                } else if ({{ $amount }} === 75000) {
-                  redirectUrl = 'https://app.trevitsoft.com/business/register?package=3';
+                if ({{ $amount }} === 23000) {
+                  redirectUrl = 'https://app.tutifactura.com/business/register?package=1';
+                } else if ({{ $amount }} === 29000) {
+                  redirectUrl = 'https://app.tutifactura.com/business/register?package=2';
+                } else if ({{ $amount }} === 69000) {
+                  redirectUrl = 'https://app.tutifactura.com/business/register?package=3';
                 } else if ({{ $amount }} === 144000) {
-                  redirectUrl = 'https://app.trevitsoft.com/business/register?package=5';
+                  redirectUrl = 'https://app.tutifactura.com/business/register?package=5';
                 }
               }
 

@@ -29,6 +29,7 @@ use App\Variation;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Activitylog\Models\Activity;
 
 class ReportController extends Controller
@@ -116,6 +117,88 @@ class ReportController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id, true);
 
         return view('report.profit_loss', compact('business_locations'));
+    }
+
+    /**
+     * Reporte de costo de insumos (comprados vs. consumidos en ventas).
+     */
+    public function materialsCostReport(Request $request)
+    {
+        if (! auth()->user()->can('purchase_n_sell_report.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+
+        if ($request->ajax()) {
+            $start_date = $request->get('start_date');
+            $end_date = $request->get('end_date');
+            $location_id = $request->get('location_id');
+
+            $purchased_cost = $this->getMaterialsPurchasedCost($business_id, $start_date, $end_date);
+            $sold_cost = $this->getMaterialsSoldCost($business_id, $start_date, $end_date, $location_id);
+
+            return [
+                'purchased_cost' => $purchased_cost,
+                'sold_cost' => $sold_cost,
+            ];
+        }
+
+        $business_locations = BusinessLocation::forDropdown($business_id, true);
+
+        return view('report.materials_cost', compact('business_locations'));
+    }
+
+    /**
+     * Costo de insumos que ingresaron al stock (precio unitario x unidades ingresadas).
+     * Nota: se basa en la tabla `materiales`; si no tiene timestamps, se usa el total sin filtrar por fecha.
+     */
+    protected function getMaterialsPurchasedCost($business_id, $start_date = null, $end_date = null)
+    {
+        $query = DB::table('materiales')
+            ->where('business_id', $business_id);
+
+        // Solo aplicar filtro de fechas si la tabla tiene columna created_at
+        if (! empty($start_date) && ! empty($end_date) && Schema::hasColumn('materiales', 'created_at')) {
+            $query->whereDate('created_at', '>=', $start_date)
+                ->whereDate('created_at', '<=', $end_date);
+        }
+
+        return (float) ($query->select(DB::raw('SUM(unidades_en_stock * precio) as total_cost'))->value('total_cost') ?? 0);
+    }
+
+    /**
+     * Costo de insumos consumidos por productos vendidos en el rango indicado.
+     */
+    protected function getMaterialsSoldCost($business_id, $start_date = null, $end_date = null, $location_id = null)
+    {
+        $query = DB::table('transaction_sell_lines as tsl')
+            ->join('transactions as t', 'tsl.transaction_id', '=', 't.id')
+            ->join('material_product as mp', function ($join) use ($business_id) {
+                $join->on('mp.product_id', '=', 'tsl.product_id')
+                    ->where('mp.business_id', '=', $business_id);
+            })
+            ->join('materiales as mat', function ($join) use ($business_id) {
+                $join->on('mat.ID', '=', 'mp.material_id')
+                    ->where('mat.business_id', '=', $business_id);
+            })
+            ->where('t.type', 'sell')
+            ->where('t.status', 'final')
+            ->where('t.business_id', $business_id);
+
+        if (! empty($start_date)) {
+            $query->whereDate('t.transaction_date', '>=', $start_date);
+        }
+        if (! empty($end_date)) {
+            $query->whereDate('t.transaction_date', '<=', $end_date);
+        }
+        if (! empty($location_id)) {
+            $query->where('t.location_id', $location_id);
+        }
+
+        $total = $query->select(DB::raw('SUM(tsl.quantity * mp.quantity * mat.precio) as total_cost'))->value('total_cost');
+
+        return (float) ($total ?? 0);
     }
 
     /**

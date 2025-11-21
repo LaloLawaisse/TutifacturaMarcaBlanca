@@ -312,7 +312,7 @@
         </div>
     </div>
     <div class="powered-by">
-        <span>Powered by: Trevitsoft</span>
+        <span>Powered by: Tutifactura</span>
     </div>
 </body>
 </html>

@@ -22,7 +22,9 @@ class Kernel extends ConsoleKernel
             //Scheduling backup, specify the time when the backup will get cleaned & time when it will run.
             
             $schedule->command('backup:clean')->daily()->at('01:00');
-            $schedule->command('backup:run')->daily()->at('01:30');
+            $schedule
+            // Run fixed costs monthly job daily at 02:00
+            ->command('fixed-costs:run')->daily()->at('02:00');
 
 
             //Schedule to create recurring invoices
@@ -53,3 +55,4 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 }
+

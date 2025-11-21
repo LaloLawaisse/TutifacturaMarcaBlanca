@@ -30,7 +30,7 @@
     <!-- End Google Tag Manager -->
 </head>
 
-<body class="hold-transition" style="height: auto; background-color: #3cc5fe;">
+<body class="hold-transition" style="height: auto; background-color: #FF006B;">
     @if (session('status'))
         <input type="hidden" id="status_span" data-status="{{ session('status.success') }}"
             data-msg="{{ session('status.msg') }}">

@@ -44,8 +44,8 @@ class SellResource extends JsonResource
         $array['payment_link'] = $commonUtil->getInvoicePaymentLink($array['id'], $array['business_id']);
         if (!empty($array['factura_afip'])) {
             $array['factura_afip'] = str_replace(
-                '/www/wwwroot/app.trevitsoft.com/storage/app/public/',
-                'https://app.trevitsoft.com/storage/',
+                '/www/wwwroot/app.tutifactura.com/storage/app/public/',
+                'https://app.tutifactura.com/storage/',
                 $array['factura_afip']
             );
         }

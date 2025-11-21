@@ -3,7 +3,7 @@
  return [
      'exc_of_tax' => 'Impuesto no incluido', /* modified */
      'inc_of_tax' => 'Impuesto incluido', /* modified */
-     'profit_percent' => 'x Margen (%)',
+     'profit_percent' => 'x Margen de Ganancia(%)',
      'add_new_product' => 'Agregar nuevo producto',
      'add_product_for_labels' => 'Agregar productos para generar etiquetas',
      'product_type' => 'Tipo de producto',
@@ -24,7 +24,7 @@
      'inclusive' => 'Incluido',
      'exclusive' => 'No incluido',
      'edit_product' => 'Editar producto',
-     'default_purchase_price' => 'PRECIO DE COMPRA',
+     'default_purchase_price' => 'PRECIO DE COMPRA/COSTO PRODUCCION TOTAL',
      'default_selling_price' => 'PRECIO DE VENTA',
      'value' => 'Valor',
      'variation_name' => 'Nombre de variación',

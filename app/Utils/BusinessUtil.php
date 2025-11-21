@@ -403,6 +403,7 @@ class BusinessUtil extends Util
             $location_payment_types[$key] = [
                 'is_enabled' => 1,
                 'account' => null,
+                'surcharge_percent' => 0,
             ];
         }
         $location = BusinessLocation::create(['business_id' => $business_id,

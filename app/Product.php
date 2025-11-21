@@ -22,6 +22,7 @@ class Product extends Model
      */
     protected $casts = [
         'sub_unit_ids' => 'array',
+        'materiales' => 'array',
     ];
 
     /**
@@ -222,4 +223,18 @@ class Product extends Model
     {
         return $this->hasMany(\App\ProductRack::class);
     }
+
+    public function materialesRecords()
+    {
+        $ids = is_array($this->materiales) ? $this->materiales : [];
+        $ids = array_filter(array_map('intval', $ids));
+        if (empty($ids)) {
+            return collect();
+        }
+
+        return \App\Material::where('business_id', $this->business_id)
+            ->whereIn('ID', $ids)
+            ->get();
+    }
 }
+

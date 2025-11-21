@@ -4,7 +4,7 @@
     <![endif]-->
     <style>
         body {
-            background-color: #005a5a;
+            background-color: ##FF006B;
         }
 
         h1 {
@@ -23,7 +23,7 @@
         }
 
         .patt-circ.hovered {
-            background-color: #005a5a;
+            background-color: #FF006B;
             border: none;
         }
 
@@ -79,7 +79,7 @@
     </style>
     <style>
         body {
-            background: #005a5a;
+            background: #FF006B;
         }
 
         h1 {

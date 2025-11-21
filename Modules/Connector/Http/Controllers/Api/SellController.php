@@ -2,7 +2,7 @@
 
 namespace Modules\Connector\Http\Controllers\Api;
 
-require_once '/www/wwwroot/app.trevitsoft.com/vendor/afipsdk/afip.php/src/Afip.php';
+require_once '/www/wwwroot/app.tutifactura.com/vendor/afipsdk/afip.php/src/Afip.php';
 
 use App\Business;
 use App\BusinessLocation;

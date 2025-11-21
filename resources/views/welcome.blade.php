@@ -3,7 +3,7 @@
 @inject('request', 'Illuminate\Http\Request')
 @section('content')
 <div class="col-md-12 col-sm-12 col-xs-12 right-col tw-pt-20 tw-pb-10 tw-px-5 tw-flex tw-flex-col tw-items-center tw-justify-center" 
-    style="background-color: #005a5a;">
+    style="background-color: #FF006B;">
     <div class="tw-text-6xl tw-font-extrabold tw-text-center tw-text-white tw-shadow-lg tw-px-4 tw-py-2 tw-rounded-md"
     style="background-color: #FF3385;">
         {{ config('app.name', 'UltimatePOS') }}
@@ -16,7 +16,7 @@
 </div>
 
 <div id="whatsapp-button">
-            <a href="https://api.whatsapp.com/send/?phone=%2B5493573514309&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20Trevitsoft.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
+            <a href="https://api.whatsapp.com/send/?phone=%2B5491138752594&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20Tutifactura.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
             </a>
         </div>

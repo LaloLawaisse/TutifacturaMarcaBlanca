@@ -27,7 +27,7 @@
 
 namespace App\Http\Controllers;
 
-require_once '/www/wwwroot/app.trevitsoft.com/vendor/afipsdk/afip.php/src/Afip.php';  // Usar require_once para cargar la clase Afip
+require_once '/www/wwwroot/app.tutifactura.com/vendor/afipsdk/afip.php/src/Afip.php';  // Usar require_once para cargar la clase Afip
 
 use Afip;
 use Illuminate\Support\Facades\Log;
@@ -2057,7 +2057,7 @@ public function create(Request $request)
         // Valida y obtén la ruta del archivo como antes
         $transaction = Transaction::findOrFail($transaction_id);
         $filename = basename($transaction->factura_afip);
-        $file_path = '/www/wwwroot/app.trevitsoft.com/storage/app/public/facturas_afip/' . $filename;
+        $file_path = '/www/wwwroot/app.tutifactura.com/storage/app/public/facturas_afip/' . $filename;
         
         return response()->file($file_path);  // Muestra el PDF en el navegador
     }

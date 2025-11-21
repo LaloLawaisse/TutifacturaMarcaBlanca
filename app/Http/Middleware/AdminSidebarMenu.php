@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Middleware;
 
 use App\Utils\ModuleUtil;
@@ -241,6 +240,51 @@ class AdminSidebarMenu
                 )->order(20);
             }
 
+            // Materials (Insumos) dropdown
+            if (auth()->user()->can('product.view') || auth()->user()->can('product.create')) {
+                $menu->dropdown(
+                    'Insumos',
+                    function ($sub) {
+                        if (auth()->user()->can('product.view')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\MaterialController::class, 'index']),
+                                'Lista de insumos',
+                                ['icon' => '', 'active' => request()->segment(1) == 'materials' && request()->segment(2) == '']
+                            );
+                        }
+                        if (auth()->user()->can('product.create')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\MaterialController::class, 'create']),
+                                'Agregar insumo',
+                                ['icon' => '', 'active' => request()->segment(1) == 'materials' && request()->segment(2) == 'create']
+                            );
+                        }
+                    },
+                    ['icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="tw-size-5 tw-shrink-0" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>', 'id' => 'menu_materials']
+                )->order(21);
+            }
+
+            // Fixed Costs dropdown
+            if (auth()->user()->can('expense.access') || auth()->user()->can('all_expense.access')) {
+                $menu->dropdown(
+                    'Costos Fijos',
+                    function ($sub) {
+                        $sub->url(
+                            action([\App\Http\Controllers\FixedCostController::class, 'index']),
+                            'Lista de costos',
+                            ['icon' => '', 'active' => request()->segment(1) == 'fixed-costs' && request()->segment(2) == '']
+                        );
+                        if (auth()->user()->can('expense.add')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\FixedCostController::class, 'create']),
+                                'Agregar costo',
+                                ['icon' => '', 'active' => request()->segment(1) == 'fixed-costs' && request()->segment(2) == 'create']
+                            );
+                        }
+                    },
+                    ['icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="tw-size-5 tw-shrink-0" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l0 18" /><path d="M16 19h-8a2 2 0 0 1 -2 -2v-8a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2z" /></svg>']
+                )->order(22);
+            }
             //Purchase dropdown
             if (in_array('purchases', $enabled_modules) && (auth()->user()->can('purchase.view') || auth()->user()->can('purchase.create') || auth()->user()->can('purchase.update'))) {
                 $menu->dropdown(
@@ -406,7 +450,7 @@ class AdminSidebarMenu
                         }
                         
                         $sub->url(
-                            'https://app.trevitsoft.com/stock-adjustments/create',
+                            'https://app.tutifactura.com/stock-adjustments/create',
                             'Integraciones',
                             ['icon' => '', 'active' => request()->segment(1) == 'import-sales']
                         );
@@ -898,3 +942,6 @@ class AdminSidebarMenu
         return $next($request);
     }
 }
+
+
+

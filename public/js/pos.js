@@ -1874,7 +1874,30 @@ function calculate_billing_details(price_total) {
         $('#packing_charge_text').text(__currency_trans_from_en(packing_charge, false));
     }
 
-    var total_payable = price_total + order_tax - discount + shipping_charges + packing_charge + additional_expense;
+    //Base total payable before payment method surcharge
+    var base_total_payable = price_total + order_tax - discount + shipping_charges + packing_charge + additional_expense;
+
+    //Calculate payment method surcharge based on first payment row
+    var surcharge_amount = 0;
+    var payment_settings = $('select#select_location_id').length
+        ? $('select#select_location_id').find(':selected').data('default_payment_accounts')
+        : $('#location_id').data('default_payment_accounts');
+
+    if (payment_settings) {
+        var first_payment_type = $('#payment_rows_div').find('.payment_types_dropdown').first().val();
+        if (
+            first_payment_type &&
+            payment_settings[first_payment_type] &&
+            payment_settings[first_payment_type]['surcharge_percent']
+        ) {
+            var surcharge_percent = parseFloat(payment_settings[first_payment_type]['surcharge_percent']);
+            if (!isNaN(surcharge_percent) && surcharge_percent !== 0) {
+                surcharge_amount = __calculate_amount('percentage', surcharge_percent, base_total_payable);
+            }
+        }
+    }
+
+    var total_payable = base_total_payable + surcharge_amount;
 
     var rounding_multiple = $('#amount_rounding_method').val() ? parseFloat($('#amount_rounding_method').val()) : 0;
     var round_off_data = __round(total_payable, rounding_multiple);
@@ -2594,6 +2617,12 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
             account_dropdown.prop('disabled', false); 
             account_dropdown.closest('.form-group').removeClass('hide');
         }    
+    }
+
+    // Recalculate totals to apply any payment method surcharge
+    if (typeof get_subtotal === 'function') {
+        var price_total = get_subtotal();
+        calculate_billing_details(price_total);
     }
 });
 

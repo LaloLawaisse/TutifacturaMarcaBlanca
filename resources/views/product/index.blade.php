@@ -323,6 +323,16 @@
                         name: 'products.sku'
                     },
                     {
+                        data: 'insumos',
+                        name: 'insumos',
+                        searchable: false
+                    },
+                    {
+                        data: 'material_cost',
+                        name: 'material_cost',
+                        searchable: false
+                    },
+                    {
                         data: 'product_custom_field1',
                         name: 'products.product_custom_field1',
                         visible: $('#cf_1').text().length > 0

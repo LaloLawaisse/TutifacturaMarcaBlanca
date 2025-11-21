@@ -80,6 +80,14 @@ class ProductController extends Controller
                 ->leftJoin('categories as c1', 'products.category_id', '=', 'c1.id')
                 ->leftJoin('categories as c2', 'products.sub_category_id', '=', 'c2.id')
                 ->leftJoin('tax_rates', 'products.tax', '=', 'tax_rates.id')
+                ->leftJoin('material_product as mp', function ($join) use ($business_id) {
+                    $join->on('mp.product_id', '=', 'products.id')
+                        ->where('mp.business_id', '=', $business_id);
+                })
+                ->leftJoin('materiales as mat', function ($join) use ($business_id) {
+                    $join->on('mat.ID', '=', 'mp.material_id')
+                        ->where('mat.business_id', '=', $business_id);
+                })
                 ->join('variations as v', 'v.product_id', '=', 'products.id')
                 ->leftJoin('variation_location_details as vld', function ($join) use ($permitted_locations) {
                     $join->on('vld.variation_id', '=', 'v.id');
@@ -111,6 +119,7 @@ class ProductController extends Controller
 
             $products = $query->select(
                 'products.id',
+                'products.business_id',
                 'products.name as product',
                 'products.type',
                 'c1.name as category',
@@ -123,6 +132,7 @@ class ProductController extends Controller
                 'products.enable_stock',
                 'products.is_inactive',
                 'products.not_for_selling',
+                'products.materiales',
                 'products.product_custom_field1', 'products.product_custom_field2', 'products.product_custom_field3', 'products.product_custom_field4', 'products.product_custom_field5', 'products.product_custom_field6',
                 'products.product_custom_field7', 'products.product_custom_field8', 'products.product_custom_field9',
                 'products.product_custom_field10', 'products.product_custom_field11', 'products.product_custom_field12',
@@ -131,6 +141,7 @@ class ProductController extends Controller
                 'products.product_custom_field19', 'products.product_custom_field20',
                 'products.alert_quantity',
                 DB::raw('SUM(vld.qty_available) as current_stock'),
+                DB::raw('COALESCE(SUM(mp.quantity * mat.precio), 0) as material_cost'),
                 DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
                 DB::raw('MIN(v.sell_price_inc_tax) as min_price'),
                 DB::raw('MAX(v.dpp_inc_tax) as max_purchase_price'),
@@ -195,6 +206,34 @@ class ProductController extends Controller
                     'product_locations',
                     function ($row) {
                         return $row->product_locations->implode('name', ', ');
+                    }
+                )
+                ->addColumn(
+                    'insumos',
+                    function ($row) {
+                        $materials = is_array($row->materiales) ? $row->materiales : [];
+                        $ids = array_values(array_unique(array_filter(array_map('intval', $materials))));
+                        if (empty($ids)) {
+                            return '-';
+                        }
+
+                        $materialNames = \App\Material::where('business_id', $row->business_id)
+                            ->whereIn('ID', $ids)
+                            ->pluck('nombre')
+                            ->toArray();
+
+                        if (empty($materialNames)) {
+                            return '-';
+                        }
+
+                        return e(implode(', ', $materialNames));
+                    }
+                )
+                ->addColumn(
+                    'material_cost',
+                    function ($row) {
+                        $cost = (float) ($row->material_cost ?? 0);
+                        return '<span class="display_currency" data-currency_symbol="true" data-orig-value="' . e($cost) . '">' . e($cost) . '</span>';
                     }
                 )
                 ->editColumn('category', '{{$category}} @if(!empty($sub_category))<br/> -- {{$sub_category}}@endif')
@@ -306,7 +345,7 @@ class ProductController extends Controller
                             return '';
                         }
                     }, ])
-                ->rawColumns(['action', 'image', 'mass_delete', 'product', 'selling_price', 'purchase_price', 'category', 'current_stock'])
+                ->rawColumns(['action', 'image', 'mass_delete', 'product', 'selling_price', 'purchase_price', 'category', 'current_stock', 'material_cost'])
                 ->make(true);
         }
 
@@ -348,6 +387,96 @@ class ProductController extends Controller
                 'is_woocommerce',
                 'is_admin'
             ));
+    }
+
+    /**
+     * Sincroniza la relación producto <-> materiales desde el lado del producto.
+     *
+     * @param  \App\Product  $product
+     * @param  array  $oldMaterialIds
+     * @param  array  $newMaterialIds
+     * @param  int  $business_id
+     * @return void
+     */
+    protected function syncMaterialsForProduct(Product $product, array $oldMaterialIds, array $newMaterialIds, $business_id)
+    {
+        $oldMaterialIds = array_values(array_unique(array_filter(array_map('intval', $oldMaterialIds))));
+        $newMaterialIds = array_values(array_unique(array_filter(array_map('intval', $newMaterialIds))));
+
+        $toUpdate = array_values(array_unique(array_merge($oldMaterialIds, $newMaterialIds)));
+        if (empty($toUpdate)) {
+            return;
+        }
+
+        $materials = \App\Material::where('business_id', $business_id)
+            ->whereIn('ID', $toUpdate)
+            ->get();
+
+        foreach ($materials as $material) {
+            $linkedProducts = is_array($material->productos_linkeados) ? $material->productos_linkeados : [];
+            $linkedProducts = array_values(array_unique(array_filter(array_map('intval', $linkedProducts))));
+
+            if (in_array($material->ID, $newMaterialIds, true)) {
+                if (!in_array($product->id, $linkedProducts, true)) {
+                    $linkedProducts[] = $product->id;
+                }
+            } else {
+                $linkedProducts = array_values(array_diff($linkedProducts, [$product->id]));
+            }
+
+            $material->productos_linkeados = $linkedProducts;
+            $material->save();
+        }
+    }
+
+    /**
+     * Sincroniza la tabla pivot material_product para un producto.
+     *
+     * @param  int    $business_id
+     * @param  int    $product_id
+     * @param  array  $materialIds
+     * @param  array  $materialQuantities  [material_id => qty]
+     * @return void
+     */
+    protected function syncProductMaterialsPivot($business_id, $product_id, array $materialIds, array $materialQuantities): void
+    {
+        $materialIds = array_values(array_unique(array_filter(array_map('intval', $materialIds))));
+
+        // Eliminar materiales que ya no están vinculados
+        DB::table('material_product')
+            ->where('business_id', $business_id)
+            ->where('product_id', $product_id)
+            ->when(!empty($materialIds), function ($q) use ($materialIds) {
+                $q->whereNotIn('material_id', $materialIds);
+            })
+            ->when(empty($materialIds), function ($q) {
+                // Si no hay materiales, eliminar todos los vínculos
+            })
+            ->delete();
+
+        // Insertar/actualizar cantidades
+        foreach ($materialIds as $materialId) {
+            $qty = 1;
+            if (is_array($materialQuantities) && isset($materialQuantities[$materialId])) {
+                $qtyVal = (float) $materialQuantities[$materialId];
+                if ($qtyVal > 0) {
+                    $qty = $qtyVal;
+                }
+            }
+
+            DB::table('material_product')->updateOrInsert(
+                [
+                    'business_id' => $business_id,
+                    'product_id' => $product_id,
+                    'material_id' => $materialId,
+                ],
+                [
+                    'quantity' => $qty,
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
     }
 
     /**
@@ -504,6 +633,23 @@ class ProductController extends Controller
                 $product->save();
             }
 
+            // Vincular materiales seleccionados al producto y actualizar insumos
+            $material_ids = $request->input('materiales', []);
+            if (!is_array($material_ids)) {
+                $material_ids = [];
+            }
+            $material_ids = array_values(array_unique(array_filter(array_map('intval', $material_ids))));
+
+            $product->materiales = $material_ids;
+            $product->save();
+
+            // Actualizar pivot con cantidades
+            $material_qty = $request->input('materiales_qty', []);
+            $this->syncProductMaterialsPivot($business_id, $product->id, $material_ids, $material_qty);
+
+            // Mantener JSON productos_linkeados en materiales
+            $this->syncMaterialsForProduct($product, [], $material_ids, $business_id);
+
             //Add product locations
             $product_locations = $request->input('product_locations');
             if (! empty($product_locations)) {
@@ -628,6 +774,13 @@ class ProductController extends Controller
                             ->where('id', $id)
                             ->firstOrFail();
 
+        // Cantidades de insumos por producto desde la tabla pivot
+        $material_quantities = DB::table('material_product')
+            ->where('business_id', $business_id)
+            ->where('product_id', $product->id)
+            ->pluck('quantity', 'material_id')
+            ->toArray();
+
         //Sub-category
         $sub_categories = [];
         $sub_categories = Category::where('business_id', $business_id)
@@ -660,7 +813,28 @@ class ProductController extends Controller
         $alert_quantity = ! is_null($product->alert_quantity) ? $this->productUtil->num_f($product->alert_quantity, false, null, true) : null;
 
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data', 'alert_quantity'));
+                ->with(compact(
+                    'categories',
+                    'brands',
+                    'units',
+                    'sub_units',
+                    'taxes',
+                    'tax_attributes',
+                    'barcode_types',
+                    'product',
+                    'sub_categories',
+                    'default_profit_percent',
+                    'business_locations',
+                    'rack_details',
+                    'selling_price_group_count',
+                    'module_form_parts',
+                    'product_types',
+                    'common_settings',
+                    'warranties',
+                    'pos_module_data',
+                    'alert_quantity',
+                    'material_quantities'
+                ));
     }
 
     /**
@@ -778,8 +952,26 @@ class ProductController extends Controller
                 }
             }
 
+            // Guardar materiales vinculados y sincronizar con insumos
+            $old_material_ids = is_array($product->materiales) ? $product->materiales : [];
+            $old_material_ids = array_values(array_unique(array_filter(array_map('intval', $old_material_ids))));
+
+            $new_material_ids = $request->input('materiales', []);
+            if (!is_array($new_material_ids)) {
+                $new_material_ids = [];
+            }
+            $new_material_ids = array_values(array_unique(array_filter(array_map('intval', $new_material_ids))));
+
+            $product->materiales = $new_material_ids;
             $product->save();
             $product->touch();
+
+            // Actualizar pivot de cantidades
+            $material_qty = $request->input('materiales_qty', []);
+            $this->syncProductMaterialsPivot($business_id, $product->id, $new_material_ids, $material_qty);
+
+            // Mantener JSON productos_linkeados en materiales
+            $this->syncMaterialsForProduct($product, $old_material_ids, $new_material_ids, $business_id);
 
             event(new ProductsCreatedOrModified($product, 'updated'));
 
@@ -2381,3 +2573,8 @@ class ProductController extends Controller
         return Excel::download(new ProductsExport, $filename);
     }
 }
+
+
+
+
+

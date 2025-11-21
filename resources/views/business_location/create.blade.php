@@ -175,6 +175,7 @@
                                 <tr>
                                     <th class="text-center">@lang('lang_v1.payment_method')</th>
                                     <th class="text-center">@lang('lang_v1.enable')</th>
+                                    <th class="text-center">Recargo (%)</th>
                                     <th class="text-center @if(empty($accounts)) hide @endif">@lang('lang_v1.default_accounts') @show_tooltip(__('lang_v1.default_account_help'))</th>
                                 </tr>
                             </thead>
@@ -183,6 +184,9 @@
                                 <tr>
                                     <td class="text-center">{{$value}}</td>
                                     <td class="text-center">{!! Form::checkbox('default_payment_accounts[' . $key . '][is_enabled]', 1, true); !!}</td>
+                                    <td class="text-center">
+                                        {!! Form::number('default_payment_accounts[' . $key . '][surcharge_percent]', null, ['class' => 'form-control input-sm', 'step' => '0.01', 'min' => '0']); !!}
+                                    </td>
                                     <td class="text-center @if(empty($accounts)) hide @endif">
                                         {!! Form::select('default_payment_accounts[' . $key . '][account]', $accounts, null, ['class' => 'form-control input-sm']); !!}
                                     </td>

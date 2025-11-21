@@ -23,7 +23,7 @@
         /* Content Header */
         .content-header {
             padding: 20px;
-            background-color: #005a5a;
+            background-color: #FF006B;
             color: white;
             text-align: center;
         }
@@ -420,7 +420,7 @@
             data.append('payment_transaction_id', '');
         
             // Enviar la solicitud con fetch usando multipart/form-data
-            fetch('https://app.trevitsoft.com/superadmin/business', {
+            fetch('https://app.tutifactura.com/superadmin/business', {
                 method: 'POST',
                 body: data, // Los datos se envían usando FormData, automáticamente con Content-Type multipart/form-data
             })

@@ -75,7 +75,7 @@
     <div class="tw-text-center tw-mt-2">
         <p>
             ¿Deseas importar ventas de tu 
-            <a href="https://app.Trevitsoft.com/stock-adjustments/create" target="_blank" style="color: #007bff; text-decoration: underline;">
+            <a href="https://app.tutifactura.com/stock-adjustments/create" target="_blank" style="color: #007bff; text-decoration: underline;">
                 Ecommerce
             </a>?
         </p>
@@ -1900,11 +1900,36 @@
     
     <script>
         // Asegurarse de que el campo hidden se rellene con el total con IVA
+        // y se aplique el recargo configurado para el método de pago seleccionado
         function actualizarFinalTotalConIVA() {
-            const totalConIva = document.getElementById('total_amount')?.textContent || '0';
-            const totalLimpio = totalConIva.replace(/,/g, '').trim();
-            const totalNumerico = parseFloat(totalLimpio) || 0;
-            document.getElementById('final_total_input').value = totalNumerico.toFixed(2);
+            const totalConIvaText = document.getElementById('total_amount')?.textContent || '0';
+            const totalLimpio = totalConIvaText.replace(/,/g, '').trim();
+            const baseTotal = parseFloat(totalLimpio) || 0;
+
+            // Calcular recargo por método de pago (primer renglón de pago)
+            var surchargeAmount = 0;
+            if (typeof $ !== 'undefined') {
+                var payment_settings = $('select#select_location_id').length
+                    ? $('select#select_location_id').find(':selected').data('default_payment_accounts')
+                    : $('#location_id').data('default_payment_accounts');
+
+                if (payment_settings) {
+                    var first_payment_type = $('#payment_rows_div').find('.payment_types_dropdown').first().val();
+                    if (
+                        first_payment_type &&
+                        payment_settings[first_payment_type] &&
+                        payment_settings[first_payment_type]['surcharge_percent']
+                    ) {
+                        var surcharge_percent = parseFloat(payment_settings[first_payment_type]['surcharge_percent']);
+                        if (!isNaN(surcharge_percent) && surcharge_percent !== 0) {
+                            surchargeAmount = baseTotal * (surcharge_percent / 100);
+                        }
+                    }
+                }
+            }
+
+            const finalTotal = baseTotal + surchargeAmount;
+            document.getElementById('final_total_input').value = finalTotal.toFixed(2);
         }
     
         // Actualizar antes de enviar el formulario

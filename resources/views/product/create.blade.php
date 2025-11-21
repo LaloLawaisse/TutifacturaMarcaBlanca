@@ -115,6 +115,24 @@
                 {!! Form::select('product_locations[]', $business_locations, $default_location, ['class' => 'form-control select2', 'multiple', 'id' => 'product_locations']); !!}
             </div>
         </div>
+        <div class="col-sm-8">
+            <div class="form-group">
+                {!! Form::label('materiales', 'Insumos vinculados:') !!}
+                {!! Form::select('materiales[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'materiales_select']) !!}
+                <p class="help-block">Seleccione los insumos usados para fabricar este producto.</p>
+                <div id="materiales_rows" class="table-responsive" style="margin-top:10px;">
+                    <table class="table table-bordered" id="materiales_table">
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th style="width:120px;">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
 
         <div class="clearfix"></div>
@@ -303,11 +321,12 @@
                 {!! Form::select(
                     'tax',
                     [
+                        0 => 'Sin impuesto (0%)',
                         1 => 'IVA 21%',
                         2 => 'IVA 27%',
                         3 => 'IVA 10.5%'
                     ],
-                    1,  // Valor seleccionado por defecto (puedes cambiarlo si lo deseas)
+                    0,
                     ['class' => 'form-control select2']
                 ) !!}
             </div>
@@ -386,20 +405,23 @@
 
 <script>
 $(function () {
-    // Select del impuesto aplicable (COMPRA) – de ahí tomamos el % (IVA 21%, etc.)
+    // Select del impuesto aplicable (COMPRA) â€“ de ahÃ­ tomamos el % (IVA 21%, etc.)
     const $taxSelect = $('#tax');
 
     // Input "Impuesto no incluido" de PRECIO DE VENTA
     const $sellPriceExcl = $('#single_dsp');
 
-    // Inserta el rótulo debajo del input si no existe
+    // Inserta el rÃ³tulo debajo del input si no existe
     if ($('#selling_price_with_tax').length === 0 && $sellPriceExcl.length) {
-        $('<div id="selling_price_with_tax" class="help-block text-muted" style="margin-top:6px;">' +
-            'Valor con impuestos aplicados: 0.00' +
-          '</div>').insertAfter($sellPriceExcl);
+        $(
+            '<div class="help-block text-muted" style="margin-top:6px;" id="selling_price_info">' +
+                '<div id="selling_price_no_tax">Valor sin impuestos: 0.00</div>' +
+                '<div id="selling_price_with_tax" style="display:none;">Valor con impuestos aplicados: 0.00</div>' +
+            '</div>'
+        ).insertAfter($sellPriceExcl);
     }
 
-    // Convierte "1.234,56" o "1234.56" a número
+    // Convierte "1.234,56" o "1234.56" a nÃºmero
     function parseNumber(val) {
         if (!val) return 0;
         const s = String(val).trim();
@@ -411,7 +433,7 @@ $(function () {
         return parseFloat(s.replace(/,/g, '')) || 0;
     }
 
-    // Lee el % desde el texto de la opción seleccionada (e.g. "IVA 21%")
+    // Lee el % desde el texto de la opciÃ³n seleccionada (e.g. "IVA 21%")
     function getSelectedTaxPct() {
         const txt = ($taxSelect.find('option:selected').text() || '').toLowerCase();
         const m = txt.match(/(\d+(?:[\.,]\d+)?)\s*%/);
@@ -424,8 +446,15 @@ $(function () {
     function updateSellingPriceWithTax() {
         const base = parseNumber($sellPriceExcl.val());
         const pct  = getSelectedTaxPct();
-        const total = base * (1 + pct / 100);
-        $('#selling_price_with_tax').text('Valor con impuestos aplicados: ' + format2(total));
+
+        $('#selling_price_no_tax').text('Valor sin impuestos: ' + format2(base));
+
+        if (pct !== 0) {
+            const total = base * (1 + pct / 100);
+            $('#selling_price_with_tax').text('Valor con impuestos aplicados: ' + format2(total)).show();
+        } else {
+            $('#selling_price_with_tax').hide();
+        }
     }
 
     // Eventos
@@ -438,4 +467,62 @@ $(function () {
 </script>
 
 
+@endsection
+@section('javascript')
+    @parent
+    <script>
+        $(function(){
+            var $materialsSelect = $('#materiales_select');
+            var $materialsTableBody = $('#materiales_table tbody');
+
+            function materialRowId(id) {
+                return 'material-row-' + id;
+            }
+
+            function addMaterialRow(data, qty) {
+                var id = data.id;
+                var text = data.text;
+                qty = qty || 1;
+
+                if (!id || !text) {
+                    return;
+                }
+
+                if ($('#' + materialRowId(id)).length) {
+                    return;
+                }
+
+                var rowHtml = '<tr id="' + materialRowId(id) + '" data-material-id="' + id + '">'
+                    + '<td>' + $('<div>').text(text).html() + '</td>'
+                    + '<td><input type="number" class="form-control input_number material-qty-input" '
+                    + 'name="materiales_qty[' + id + ']" min="0" step="0.01" value="' + qty + '"></td>'
+                    + '</tr>';
+
+                $materialsTableBody.append(rowHtml);
+            }
+
+            function removeMaterialRow(id) {
+                $('#' + materialRowId(id)).remove();
+            }
+
+            $materialsSelect.select2({
+                ajax: {
+                    url: '{{ url('/products/materials-options') }}',
+                    dataType: 'json', delay: 250,
+                    data: function (params) { return { q: params.term } },
+                    processResults: function (data) { return data; },
+                    cache: true
+                },
+                placeholder: 'Buscar insumos...', minimumInputLength: 1, width: '100%'
+            }).on('select2:select', function (e) {
+                var data = e.params.data || {};
+                addMaterialRow(data, 1);
+            }).on('select2:unselect', function (e) {
+                var data = e.params.data || {};
+                if (data.id) {
+                    removeMaterialRow(data.id);
+                }
+            });
+        });
+    </script>
 @endsection

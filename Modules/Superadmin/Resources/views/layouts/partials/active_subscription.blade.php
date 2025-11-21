@@ -1,5 +1,5 @@
 @if(!empty($__subscription) && env('APP_ENV') != 'demo')
-<a href="https://app.trevitsoft.com/subscription"
+<a href="https://app.tutifactura.com/subscription"
    target="_blank"
    title="@lang('superadmin::lang.active_package_description')"
    class="btn btn-sm mt-2 d-flex align-items-center"
