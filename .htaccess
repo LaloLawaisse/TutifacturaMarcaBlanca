@@ -1,9 +1,5 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # Dejar pasar los retos ACME sin reescrituras
-    RewriteRule ^\.well-known/acme-challenge/ - [L]
-
-    # Envíar todo lo demás a public/
+RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/ [NC]
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
