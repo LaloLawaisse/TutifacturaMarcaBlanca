@@ -256,7 +256,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/products/get-combo-product-entry-row', [ProductController::class, 'getComboProductEntryRow']);
     Route::post('/products/toggle-woocommerce-sync', [ProductController::class, 'toggleWooCommerceSync']);
 
-    Route::resource('products', ProductController::class);
+    Route::resource('products', ProductController::class)
+        ->where(['product' => '[0-9]+']);
 
     // Materials (Insumos)
     Route::get('/materials/list', [MaterialController::class, 'index']);
