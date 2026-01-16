@@ -1,6 +1,6 @@
 # Onboarding
 
-Propósito: alta inicial de negocio y usuarios en Tutifactura.
+Propósito: alta inicial de negocio y usuarios en gestionenorden.
 
 Requisitos
 - Credenciales de administrador inicial.

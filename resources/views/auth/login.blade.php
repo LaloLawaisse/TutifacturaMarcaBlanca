@@ -114,7 +114,7 @@
                             Bienvenido
                         </h1>
                         <h2 class="tw-text-sm tw-font-medium tw-text-gray-500">
-                            Ingresa a Tutifactura
+                            Ingresa a gestionenorden
                         </h2>
                     </div>
 
@@ -206,7 +206,7 @@
                         
                         <!-- Botón Registrarme -->
                         <button type="button"
-                            onclick="window.location.href='https://app.tutifactura.com/pricing';"
+                            onclick="window.location.href='https://www.gestionenorden.com/pricing';"
                             style="background-color: #3490dc;"
                             class="tw-h-12 tw-rounded-xl tw-text-sm md:tw-text-base tw-text-white tw-font-semibold tw-w-full tw-max-w-full mt-2 hover:bg-[#2a82c9] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2 active:bg-[#2678b3]">
                             Registrarme
@@ -240,7 +240,7 @@
         <div class="col-md-4"></div>
     </div>
             <div id="whatsapp-button">
-            <a href="https://api.whatsapp.com/send/?phone=%2B5491138752594&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20Tutifactura.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
+            <a href="https://api.whatsapp.com/send/?phone=%2B5491138752594&text=Hola%21%20Te%20escribo%20por%20asistencia%20con%20la%20pagina%20gestionenorden.&type=phone_number&app_absent=0" target="_blank" title="Escríbenos por WhatsApp">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
             </a>
         </div>

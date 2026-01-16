@@ -242,7 +242,7 @@
         </div>
     </div>
     <div class="powered-by">
-        <span>Powered by: Tutifactura</span>
+        <span>Powered by: gestionenorden</span>
     </div>
 </body>
 </html>

@@ -75,7 +75,7 @@
     <div class="tw-text-center tw-mt-2">
         <p>
             ¿Deseas importar ventas de tu 
-            <a href="https://app.tutifactura.com/stock-adjustments/create" target="_blank" style="color: #007bff; text-decoration: underline;">
+            <a href="https://www.gestionenorden.com/stock-adjustments/create" target="_blank" style="color: #007bff; text-decoration: underline;">
                 Ecommerce
             </a>?
         </p>

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use DateTime;
 
 //require 'vendor/autoload.php';  // Asegúrate de que autoload.php esté en la ubicación correcta
-require_once '/www/wwwroot/app.tutifactura.com/vendor/afipsdk/afip.php/src/Afip.php';  // Usar require_once para cargar la clase Afip
+require_once '/www/wwwroot/www.gestionenorden.com/vendor/afipsdk/afip.php/src/Afip.php';  // Usar require_once para cargar la clase Afip
 
 use Afip;
 use TCPDF;
@@ -1885,7 +1885,7 @@ WDuolM9wd08q0e+K3sFMv64C+LN34uQBwAlgPQ+ea+NHZ8b4zmbpW8fv5VvU1x/v
         }
     
         // Remover la parte absoluta de la ruta del servidor
-        $facturaPath = str_replace('/www/wwwroot/app.tutifactura.com/storage/app/public/', '', $transaction->factura_afip);
+        $facturaPath = str_replace('/www/wwwroot/www.gestionenorden.com/storage/app/public/', '', $transaction->factura_afip);
         // Generar la URL pública correcta
         $enlace = asset('storage/' . $facturaPath);
     
@@ -2229,7 +2229,7 @@ WDuolM9wd08q0e+K3sFMv64C+LN34uQBwAlgPQ+ea+NHZ8b4zmbpW8fv5VvU1x/v
 
         
         Log::info('Llamada a API AFIP para obtener datos del emisor', [
-            'url' => 'https://app.tutifactura.com/get-taxpayer-details',
+            'url' => 'https://www.gestionenorden.com/get-taxpayer-details',
             'params' => ['tax_id' => $cuitEmisor],
             'status' => $response->status(),
             'body' => $response->body(),

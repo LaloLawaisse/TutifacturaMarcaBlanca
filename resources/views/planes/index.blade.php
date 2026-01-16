@@ -420,7 +420,7 @@
             data.append('payment_transaction_id', '');
         
             // Enviar la solicitud con fetch usando multipart/form-data
-            fetch('https://app.tutifactura.com/superadmin/business', {
+            fetch('https://www.gestionenorden.com/superadmin/business', {
                 method: 'POST',
                 body: data, // Los datos se envían usando FormData, automáticamente con Content-Type multipart/form-data
             })

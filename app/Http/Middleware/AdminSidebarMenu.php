@@ -450,7 +450,7 @@ class AdminSidebarMenu
                         }
                         
                         $sub->url(
-                            'https://app.tutifactura.com/stock-adjustments/create',
+                            'https://www.gestionenorden.com/stock-adjustments/create',
                             'Integraciones',
                             ['icon' => '', 'active' => request()->segment(1) == 'import-sales']
                         );

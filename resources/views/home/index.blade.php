@@ -389,10 +389,10 @@
       <strong>¡Importante para comenzar a facturar!</strong>
       <p>
         Ver el inicio paso a paso en la plataforma: 
-        <a href="https://tutifactura.notion.site/" 
+        <a href="https://gestionenorden.notion.site/" 
            target="_blank" 
            style="color: #31708f; text-decoration: underline;">
-          https://tutifactura.notion.site/
+          https://gestionenorden.notion.site/
         </a>
       </p>
     </div>
