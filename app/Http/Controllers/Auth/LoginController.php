@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
+use App\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use App\Rules\ReCaptcha;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log; // Importar la clase Log
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -178,5 +181,29 @@ class LoginController extends Controller
             $field => $login,
             'password' => $request->input('password')
         ];
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $login = (string) $request->input($this->username());
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $user = User::where($field, $login)->first();
+
+        if ($user && ! Hash::check((string) $request->input('password'), $user->password)) {
+            Log::warning('Login fallido: contraseña incorrecta', [
+                'user_id' => $user->id,
+                $field => $login,
+                'ip' => $request->ip(),
+            ]);
+        } else {
+            Log::warning('Login fallido: usuario no encontrado', [
+                $field => $login,
+                'ip' => $request->ip(),
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ]);
     }
 }
