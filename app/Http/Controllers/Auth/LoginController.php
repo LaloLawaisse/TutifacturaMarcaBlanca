@@ -90,6 +90,18 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
+        $business_active = $user->business ? $user->business->is_active : null;
+        Log::info('Post-login check start', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'user_type' => $user->user_type,
+            'status' => $user->status ?? null,
+            'allow_login' => $user->allow_login,
+            'business_id' => $user->business_id,
+            'business_is_active' => $business_active,
+            'ip' => $request->ip(),
+        ]);
+
         $this->businessUtil->activityLog($user, 'login', null, [], false, $user->business_id);
         
         // Registrar login exitoso
@@ -131,21 +143,37 @@ class LoginController extends Controller
                     ['success' => 0, 'msg' => __('lang_v1.business_dont_have_crm_subscription')]
                 );
         }
+        Log::info('Post-login check passed', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+        ]);
     }
 
     protected function redirectTo()
     {
         $user = \Auth::user();
+        $can_dashboard = $user->can('dashboard.data');
+        $can_sell_create = $user->can('sell.create');
+        $target = '/home';
 
-        if (! $user->can('dashboard.data') && $user->can('sell.create')) {
-            return '/pos/create';
+        if (! $can_dashboard && $can_sell_create) {
+            $target = '/pos/create';
         }
 
         if ($user->user_type == 'user_customer') {
-            return 'contact/contact-dashboard';
+            $target = 'contact/contact-dashboard';
         }
 
-        return '/home';
+        Log::info('Post-login redirect', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'user_type' => $user->user_type,
+            'can_dashboard' => $can_dashboard,
+            'can_sell_create' => $can_sell_create,
+            'target' => $target,
+        ]);
+
+        return $target;
     }
 
     public function validateLogin(Request $request)
