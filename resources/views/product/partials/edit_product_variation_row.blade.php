@@ -1,7 +1,8 @@
 @if(!session('business.enable_price_tax')) 
     @php
         $default = 0;
-        $class = 'hide';
+        // No ocultar columnas de precio cuando price_tax está deshabilitado.
+        $class = '';
     @endphp
 @else
     @php

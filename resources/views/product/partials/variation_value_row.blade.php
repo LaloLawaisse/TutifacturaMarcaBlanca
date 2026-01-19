@@ -10,7 +10,8 @@
 @if(!session('business.enable_price_tax')) 
     @php
         $default = 0;
-        $class = 'hide';
+        // Mantener visibles campos de costo/venta aunque price_tax esté deshabilitado.
+        $class = '';
     @endphp
 @else
     @php
