@@ -8,7 +8,7 @@
     <a type="button"
         class="dropdown-toggle load_notifications tw-inline-flex tw-items-center tw-ring-1 tw-ring-white/10 tw-justify-center tw-text-sm tw-font-medium tw-text-white hover:tw-text-white tw-transition-all tw-duration-200 tw-bg tw-p-1.5 tw-rounded-lg"
         data-toggle="dropdown" id="show_unread_notifications" data-loaded="false"
-        style="background-color: #ff006b; hover:background-color: #e5005f;">
+        style="background-color: #00434a; hover:background-color: #00363b;">
         <span class="tw-sr-only">
             Notifications
         </span>
@@ -38,3 +38,4 @@
 </li>
 
 <input type="hidden" id="notification_page" value="1">
+

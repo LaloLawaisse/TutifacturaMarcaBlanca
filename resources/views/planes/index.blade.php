@@ -23,7 +23,7 @@
         /* Content Header */
         .content-header {
             padding: 20px;
-            background-color: #FF006B;
+            background-color: #00434a;
             color: white;
             text-align: center;
         }
@@ -439,3 +439,4 @@
 
 </body>
 </html>
+

@@ -10,7 +10,7 @@
     
     <a href="{{ route('home') }}"
        class="tw-flex tw-items-center tw-justify-center tw-w-full tw-border-r tw-h-15 tw-shrink-0 tw-border-primary-500/30"
-       style="background-color: #ff006b;">
+       style="background-color: #00434a;">
         <img src="{{ asset('public/img/logoSidebar.jpg') }}" alt="Logo" class="tw-h-15 tw-object-contain" />
     </a>
 
@@ -20,3 +20,4 @@
     <!-- /.sidebar-menu -->
     <!-- /.sidebar -->
 </aside>
+

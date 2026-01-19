@@ -147,7 +147,7 @@
                                         class="tw-text-xs md:tw-text-sm tw-font-medium tw-text-black">Contraseña</span>
                                     @if (config('app.env') != 'demo')
                                         <a href="{{ route('password.request') }}"
-                                            class="tw-text-xs md:tw-text-sm tw-font-medium tw-text-[#FF006B] tw-inline-block hover:tw-text-[#FF3385]"
+                                            class="tw-text-xs md:tw-text-sm tw-font-medium tw-text-[#00434a] tw-inline-block hover:tw-text-[#00656f]"
                                             tabindex="-1">@lang('lang_v1.forgot_your_password')</a>
                                     @endif
 
@@ -196,8 +196,8 @@
                         @endif
                         <!-- Botón de Login -->
                         <button type="submit"
-                            style="background-color: #FF006B;"
-                            class="tw-h-12 tw-rounded-xl tw-text-sm md:tw-text-base tw-text-white tw-font-semibold tw-w-full tw-max-w-full mt-2 hover:bg-[#FF3385] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2 active:bg-[#FF0059]">
+                            style="background-color: #00434a;"
+                            class="tw-h-12 tw-rounded-xl tw-text-sm md:tw-text-base tw-text-white tw-font-semibold tw-w-full tw-max-w-full mt-2 hover:bg-[#00656f] focus:tw-outline-none focus:tw-ring-2 focus:tw-ring-blue-500 focus:tw-ring-offset-2 active:bg-[#00363b]">
                             @lang('lang_v1.login')
                         </button>
                                                 
@@ -344,3 +344,4 @@
         })
     </script>
 @endsection
+

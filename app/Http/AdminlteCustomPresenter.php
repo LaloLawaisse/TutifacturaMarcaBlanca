@@ -35,7 +35,7 @@ class AdminlteCustomPresenter extends Presenter
     /**
      * {@inheritdoc}.
      */
-    public function getActiveState($item, $state = ' tw-bg-gray-200 tw-text-[#ff006b]')
+    public function getActiveState($item, $state = ' tw-bg-gray-200 tw-text-[#00434a]')
     {
         return $item->isActive() ? $state : null;
     }
@@ -47,7 +47,7 @@ class AdminlteCustomPresenter extends Presenter
      * @param  string  $state
      * @return null|string
      */
-    public function getActiveStateOnChild($item, $state = 'tw-pb-1 tw-rounded-md tw-bg-gray-200 tw-text-[#ff006b]')
+    public function getActiveStateOnChild($item, $state = 'tw-pb-1 tw-rounded-md tw-bg-gray-200 tw-text-[#00434a]')
     {
         return $item->hasActiveOnChild() ? $state : null;
     }
@@ -171,5 +171,6 @@ class AdminlteCustomPresenter extends Presenter
         }
     }
 }
+
 
 

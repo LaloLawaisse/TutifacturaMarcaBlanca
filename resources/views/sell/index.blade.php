@@ -45,7 +45,7 @@
                 @slot('tool')
                     <div class="box-tools">
                         <a class="tw-dw-btn tw-from-indigo-600 tw-to-blue-500 tw-font-bold tw-text-white tw-border-none tw-rounded-full pull-right"
-                            style="background-color: #ff006b"
+                            style="background-color: #00434a"
                             href="{{ action([\App\Http\Controllers\SellController::class, 'create']) }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -99,7 +99,7 @@
                     <tbody></tbody>
                     <tfoot>
                         <tr class="bg-gray font-17 footer-total text-center"
-                            style="background-color: #ff006b; hover:background-color: #e5005f;">
+                            style="background-color: #00434a; hover:background-color: #00363b;">
                             <td colspan="6"><strong>@lang('sale.total'):</strong></td>
                             <td class="footer_payment_status_count"></td>
                             <td class="payment_method_count"></td>
@@ -506,3 +506,4 @@
         border: 2px solid #25D366;
     }
 </style>
+

@@ -4,7 +4,7 @@
     <![endif]-->
     <style>
         body {
-            background-color: ##FF006B;
+            background-color: #00434a;
         }
 
         h1 {
@@ -23,7 +23,7 @@
         }
 
         .patt-circ.hovered {
-            background-color: #FF006B;
+            background-color: #00434a;
             border: none;
         }
 
@@ -79,7 +79,7 @@
     </style>
     <style>
         body {
-            background: #FF006B;
+            background: #00434a;
         }
 
         h1 {
@@ -103,3 +103,4 @@
     </style>
 
 <link href="{{ asset('css/tailwind/app.css') }}" rel="stylesheet">
+

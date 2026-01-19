@@ -4,7 +4,7 @@
 @section('content')
 
     <div class="tw-pb-6 tw-bg-gradient-to-r xl:tw-pb-0 "
-         style="background-color: #ff006b; hover:background-color: #e5005f;">
+         style="background-color: #00434a; hover:background-color: #00363b;">
         <div class="tw-px-5 tw-pt-3">
             {{-- <div class="sm:tw-flex sm:tw-items-center sm:tw-justify-between sm:tw-gap-12">
                 <h1 class="tw-text-2xl tw-font-medium tw-tracking-tight tw-text-white">
@@ -215,10 +215,10 @@
                 <div class="tw-relative">
                     <div class="tw-absolute tw-inset-0 tw-grid" aria-hidden="true">
                         <div class="tw-bg-gradient-to-r"
-                        style="background-color: #ff006b; hover:background-color: #e5005f;">
+                        style="background-color: #00434a; hover:background-color: #00363b;">
                         </div>
                         <div class="tw-bg-gradient-to-r xl:tw-bg-none xl:tw-bg-gray-100"
-                        style="background-color: #ff006b; hover:background-color: #e5005f;">
+                        style="background-color: #00434a; hover:background-color: #00363b;">
                         </div>
                     </div>
                     <div class="tw-px-5 tw-isolate">
@@ -1467,3 +1467,4 @@
     </script>
     
 @endsection
+
