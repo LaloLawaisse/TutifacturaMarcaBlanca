@@ -88,11 +88,6 @@ class SellController extends Controller
         $is_types_service_enabled = $this->moduleUtil->isModuleEnabled('types_of_service');
 
         if (request()->ajax()) {
-            \Log::info('Sell list request start', [
-                'user_id' => request()->session()->get('user.id'),
-                'business_id' => $business_id,
-                'params' => request()->except(['_token']),
-            ]);
             $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
             $with = [];
             $shipping_statuses = $this->transactionUtil->shipping_statuses();
@@ -100,17 +95,9 @@ class SellController extends Controller
             $sale_type = ! empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
             $sells = $this->transactionUtil->getListSells($business_id, $sale_type);
-            \Log::info('Sell list base query', [
-                'sale_type' => $sale_type,
-                'sql' => $sells->toSql(),
-                'bindings' => $sells->getBindings(),
-            ]);
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
-                \Log::info('Sell list filter: permitted_locations', [
-                    'permitted_locations' => $permitted_locations,
-                ]);
                 $sells->whereIn('transactions.location_id', $permitted_locations);
             }
 
@@ -118,18 +105,12 @@ class SellController extends Controller
             if (request()->has('created_by')) {
                 $created_by = request()->get('created_by');
                 if (! empty($created_by)) {
-                    \Log::info('Sell list filter: created_by', [
-                        'created_by' => $created_by,
-                    ]);
                     $sells->where('transactions.created_by', $created_by);
                 }
             }
 
             $partial_permissions = ['view_own_sell_only', 'view_commission_agent_sell', 'access_own_shipping', 'access_commission_agent_shipping'];
             if (! auth()->user()->can('direct_sell.view')) {
-                \Log::info('Sell list filter: direct_sell.view denied', [
-                    'user_id' => request()->session()->get('user.id'),
-                ]);
                 $sells->where(function ($q) {
                     if (auth()->user()->hasAnyPermission(['view_own_sell_only', 'access_own_shipping'])) {
                         $q->where('transactions.created_by', request()->session()->get('user.id'));
@@ -144,7 +125,6 @@ class SellController extends Controller
 
             $only_shipments = request()->only_shipments == 'true' ? true : false;
             if ($only_shipments) {
-                \Log::info('Sell list filter: only_shipments enabled');
                 $sells->whereNotNull('transactions.shipping_status');
 
                 if (auth()->user()->hasAnyPermission(['access_pending_shipments_only'])) {
@@ -210,18 +190,11 @@ class SellController extends Controller
 
             if (! empty(request()->customer_id)) {
                 $customer_id = request()->customer_id;
-                \Log::info('Sell list filter: customer_id', [
-                    'customer_id' => $customer_id,
-                ]);
                 $sells->where('contacts.id', $customer_id);
             }
             if (! empty(request()->start_date) && ! empty(request()->end_date)) {
                 $start = request()->start_date;
                 $end = request()->end_date;
-                \Log::info('Sell list filter: date_range', [
-                    'start_date' => $start,
-                    'end_date' => $end,
-                ]);
                 $sells->whereDate('transactions.transaction_date', '>=', $start)
                             ->whereDate('transactions.transaction_date', '<=', $end);
             }
@@ -230,9 +203,6 @@ class SellController extends Controller
             if (request()->has('is_direct_sale')) {
                 $is_direct_sale = request()->is_direct_sale;
                 if ($is_direct_sale == 0) {
-                    \Log::info('Sell list filter: is_direct_sale', [
-                        'is_direct_sale' => $is_direct_sale,
-                    ]);
                     $sells->where('transactions.is_direct_sale', 0);
                     $sells->whereNull('transactions.sub_type');
                 }
@@ -242,9 +212,6 @@ class SellController extends Controller
             if (request()->has('commission_agent')) {
                 $commission_agent = request()->get('commission_agent');
                 if (! empty($commission_agent)) {
-                    \Log::info('Sell list filter: commission_agent', [
-                        'commission_agent' => $commission_agent,
-                    ]);
                     $sells->where('transactions.commission_agent', $commission_agent);
                 }
             }
@@ -252,12 +219,8 @@ class SellController extends Controller
             if (! empty(request()->input('source'))) {
                 //only exception for woocommerce
                 if (request()->input('source') == 'woocommerce') {
-                    \Log::info('Sell list filter: source woocommerce');
                     $sells->whereNotNull('transactions.woocommerce_order_id');
                 } else {
-                    \Log::info('Sell list filter: source', [
-                        'source' => request()->input('source'),
-                    ]);
                     $sells->where('transactions.source', request()->input('source'));
                 }
             }
@@ -266,15 +229,11 @@ class SellController extends Controller
                 $sells->addSelect('transactions.crm_is_order_request');
 
                 if (request()->has('crm_is_order_request')) {
-                    \Log::info('Sell list filter: crm_is_order_request', [
-                        'crm_is_order_request' => request()->get('crm_is_order_request'),
-                    ]);
                     $sells->where('transactions.crm_is_order_request', 1);
                 }
             }
 
             if (request()->only_subscriptions) {
-                \Log::info('Sell list filter: only_subscriptions enabled');
                 $sells->where(function ($q) {
                     $q->whereNotNull('transactions.recur_parent_id')
                         ->orWhere('transactions.is_recurring', 1);
@@ -298,68 +257,44 @@ class SellController extends Controller
             }
 
             if (! empty(request()->input('status'))) {
-                \Log::info('Sell list filter: status', [
-                    'status' => request()->input('status'),
-                ]);
                 $sells->where('transactions.status', request()->input('status'));
             }
 
             if (! empty(request()->input('sales_cmsn_agnt'))) {
-                \Log::info('Sell list filter: sales_cmsn_agnt', [
-                    'sales_cmsn_agnt' => request()->input('sales_cmsn_agnt'),
-                ]);
                 $sells->where('transactions.commission_agent', request()->input('sales_cmsn_agnt'));
             }
 
             if (! empty(request()->input('service_staffs'))) {
-                \Log::info('Sell list filter: service_staffs', [
-                    'service_staffs' => request()->input('service_staffs'),
-                ]);
                 $sells->where('transactions.res_waiter_id', request()->input('service_staffs'));
             }
 
             $only_pending_shipments = request()->only_pending_shipments == 'true' ? true : false;
             if ($only_pending_shipments) {
-                \Log::info('Sell list filter: only_pending_shipments enabled');
                 $sells->where('transactions.shipping_status', '!=', 'delivered')
                         ->whereNotNull('transactions.shipping_status');
                 $only_shipments = true;
             }
 
             if (! empty(request()->input('shipping_status'))) {
-                \Log::info('Sell list filter: shipping_status', [
-                    'shipping_status' => request()->input('shipping_status'),
-                ]);
                 $sells->where('transactions.shipping_status', request()->input('shipping_status'));
             }
 
             if (! empty(request()->input('for_dashboard_sales_order'))) {
-                \Log::info('Sell list filter: for_dashboard_sales_order enabled');
                 $sells->whereIn('transactions.status', ['partial', 'ordered'])
                     ->orHavingRaw('so_qty_remaining > 0');
             }
 
             if ($sale_type == 'sales_order') {
                 if (! auth()->user()->can('so.view_all') && auth()->user()->can('so.view_own')) {
-                    \Log::info('Sell list filter: sales_order limited to own', [
-                        'user_id' => request()->session()->get('user.id'),
-                    ]);
                     $sells->where('transactions.created_by', request()->session()->get('user.id'));
                 }
             }
 
             if (! empty(request()->input('delivery_person'))) {
-                \Log::info('Sell list filter: delivery_person', [
-                    'delivery_person' => request()->input('delivery_person'),
-                ]);
                 $sells->where('transactions.delivery_person', request()->input('delivery_person'));
             }
 
             $sells->groupBy('transactions.id');
-            \Log::info('Sell list query ready', [
-                'sql' => $sells->toSql(),
-                'bindings' => $sells->getBindings(),
-            ]);
 
             if (! empty(request()->suspended)) {
                 $transaction_sub_type = request()->get('transaction_sub_type');
@@ -666,21 +601,8 @@ class SellController extends Controller
 
             $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status'];
 
-            $result = $datatable->rawColumns($rawColumns)
+            return $datatable->rawColumns($rawColumns)
                       ->make(true);
-            $payload = $result->getData(true);
-            $data_sample = [];
-            if (!empty($payload['data']) && is_array($payload['data'])) {
-                $data_sample = array_slice($payload['data'], 0, 3);
-            }
-            \Log::info('Sell list datatable result', [
-                'records_total' => $payload['recordsTotal'] ?? null,
-                'records_filtered' => $payload['recordsFiltered'] ?? null,
-                'data_count' => is_array($payload['data'] ?? null) ? count($payload['data']) : null,
-                'data_sample' => $data_sample,
-            ]);
-
-            return $result;
         }
 
         $business_locations = BusinessLocation::forDropdown($business_id, false);
@@ -1764,3 +1686,5 @@ class SellController extends Controller
         exit;
     }
 }
+
+

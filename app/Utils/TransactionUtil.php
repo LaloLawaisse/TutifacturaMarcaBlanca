@@ -5121,6 +5121,10 @@ class TransactionUtil extends Util
                     DB::raw("CONCAT(COALESCE(dp.surname, ''),' ',COALESCE(dp.first_name, ''),' ',COALESCE(dp.last_name,'')) as delivery_person")
                 );
 
+        if ($sale_type == 'sell') {
+            $sells->where('transactions.status', 'final');
+        }
+
         return $sells;
     }
 

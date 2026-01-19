@@ -1,8 +1,7 @@
 @if(!session('business.enable_price_tax')) 
   @php
     $default = 0;
-    // No ocultar la tabla de precios: necesitamos ver y guardar el costo aun sin price_tax.
-    $class = '';
+    $class = 'hide';
   @endphp
 @else
   @php

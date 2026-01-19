@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
+use App\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use App\Rules\ReCaptcha;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log; // Importar la clase Log
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -87,6 +90,18 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
+        $business_active = $user->business ? $user->business->is_active : null;
+        Log::info('Post-login check start', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'user_type' => $user->user_type,
+            'status' => $user->status ?? null,
+            'allow_login' => $user->allow_login,
+            'business_id' => $user->business_id,
+            'business_is_active' => $business_active,
+            'ip' => $request->ip(),
+        ]);
+
         $this->businessUtil->activityLog($user, 'login', null, [], false, $user->business_id);
         
         // Registrar login exitoso
@@ -128,21 +143,37 @@ class LoginController extends Controller
                     ['success' => 0, 'msg' => __('lang_v1.business_dont_have_crm_subscription')]
                 );
         }
+        Log::info('Post-login check passed', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+        ]);
     }
 
     protected function redirectTo()
     {
         $user = \Auth::user();
+        $can_dashboard = $user->can('dashboard.data');
+        $can_sell_create = $user->can('sell.create');
+        $target = '/home';
 
-        if (! $user->can('dashboard.data') && $user->can('sell.create')) {
-            return '/pos/create';
+        if (! $can_dashboard && $can_sell_create) {
+            $target = '/pos/create';
         }
 
         if ($user->user_type == 'user_customer') {
-            return 'contact/contact-dashboard';
+            $target = 'contact/contact-dashboard';
         }
 
-        return '/home';
+        Log::info('Post-login redirect', [
+            'user_id' => $user->id,
+            'username' => $user->username,
+            'user_type' => $user->user_type,
+            'can_dashboard' => $can_dashboard,
+            'can_sell_create' => $can_sell_create,
+            'target' => $target,
+        ]);
+
+        return $target;
     }
 
     public function validateLogin(Request $request)
@@ -178,5 +209,29 @@ class LoginController extends Controller
             $field => $login,
             'password' => $request->input('password')
         ];
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $login = (string) $request->input($this->username());
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $user = User::where($field, $login)->first();
+
+        if ($user && ! Hash::check((string) $request->input('password'), $user->password)) {
+            Log::warning('Login fallido: contraseña incorrecta', [
+                'user_id' => $user->id,
+                $field => $login,
+                'ip' => $request->ip(),
+            ]);
+        } else {
+            Log::warning('Login fallido: usuario no encontrado', [
+                $field => $login,
+                'ip' => $request->ip(),
+            ]);
+        }
+
+        throw ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ]);
     }
 }

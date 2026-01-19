@@ -24,7 +24,6 @@ use App\Warranty;
 use Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use App\Events\ProductsCreatedOrModified;
@@ -586,32 +585,6 @@ class ProductController extends Controller
             $product_details = $request->only($form_fields);
             $product_details['business_id'] = $business_id;
             $product_details['created_by'] = $request->session()->get('user.id');
-            // Normalizar claves foráneas opcionales: si vienen vacías, poner null para no insertar 0
-            foreach (['brand_id', 'category_id', 'sub_category_id', 'secondary_unit_id', 'warranty_id', 'tax'] as $fkField) {
-                if (!isset($product_details[$fkField]) || $product_details[$fkField] === '' || $product_details[$fkField] === '0') {
-                    $product_details[$fkField] = null;
-                }
-            }
-            Log::info('Intentando crear producto', [
-                'business_id' => $business_id,
-                'usuario' => $product_details['created_by'],
-                'nombre' => $request->input('name'),
-                'sku_original' => $request->input('sku'),
-                'tipo' => $request->input('type'),
-                'enable_stock_flag' => $request->input('enable_stock'),
-                'not_for_selling_flag' => $request->input('not_for_selling'),
-                'locations_recibidas' => is_array($request->input('product_locations')) ? count($request->input('product_locations')) : 0,
-                'materiales_recibidos' => is_array($request->input('materiales')) ? count($request->input('materiales')) : 0,
-            ]);
-            Log::debug('Precios recibidos en request', [
-                'single_dpp' => $request->input('single_dpp'),
-                'single_dpp_inc_tax' => $request->input('single_dpp_inc_tax'),
-                'single_dsp' => $request->input('single_dsp'),
-                'single_dsp_inc_tax' => $request->input('single_dsp_inc_tax'),
-                'profit_percent' => $request->input('profit_percent'),
-                'item_level_purchase_price_total' => $request->input('item_level_purchase_price_total'),
-                'purchase_price_inc_tax_combo' => $request->input('purchase_price_inc_tax'),
-            ]);
 
             $product_details['enable_stock'] = (! empty($request->input('enable_stock')) && $request->input('enable_stock') == 1) ? 1 : 0;
             $product_details['not_for_selling'] = (! empty($request->input('not_for_selling')) && $request->input('not_for_selling') == 1) ? 1 : 0;
@@ -651,7 +624,6 @@ class ProductController extends Controller
             DB::beginTransaction();
 
             $product = Product::create($product_details);
-            Log::debug('Producto base creado', ['product_id' => $product->id, 'sku_final' => $product->sku]);
 
             event(new ProductsCreatedOrModified($product_details, 'added'));
 
@@ -659,7 +631,6 @@ class ProductController extends Controller
                 $sku = $this->productUtil->generateProductSku($product->id);
                 $product->sku = $sku;
                 $product->save();
-                Log::debug('SKU autogenerado para producto', ['product_id' => $product->id, 'sku' => $sku]);
             }
 
             // Vincular materiales seleccionados al producto y actualizar insumos
@@ -671,12 +642,10 @@ class ProductController extends Controller
 
             $product->materiales = $material_ids;
             $product->save();
-            Log::debug('Materiales asignados a producto', ['product_id' => $product->id, 'materiales' => $material_ids]);
 
             // Actualizar pivot con cantidades
             $material_qty = $request->input('materiales_qty', []);
             $this->syncProductMaterialsPivot($business_id, $product->id, $material_ids, $material_qty);
-            Log::debug('Pivot materiales sincronizado', ['product_id' => $product->id, 'cant_materiales' => count($material_ids)]);
 
             // Mantener JSON productos_linkeados en materiales
             $this->syncMaterialsForProduct($product, [], $material_ids, $business_id);
@@ -685,18 +654,15 @@ class ProductController extends Controller
             $product_locations = $request->input('product_locations');
             if (! empty($product_locations)) {
                 $product->product_locations()->sync($product_locations);
-                Log::debug('Ubicaciones sincronizadas', ['product_id' => $product->id, 'locations' => $product_locations]);
             }
 
             if ($product->type == 'single') {
                 $this->productUtil->createSingleProductVariation($product->id, $product->sku, $request->input('single_dpp'), $request->input('single_dpp_inc_tax'), $request->input('profit_percent'), $request->input('single_dsp'), $request->input('single_dsp_inc_tax'));
-                Log::debug('Variacion single creada', ['product_id' => $product->id]);
             } elseif ($product->type == 'variable') {
                 if (! empty($request->input('product_variation'))) {
                     $input_variations = $request->input('product_variation');
                     
                     $this->productUtil->createVariableProductVariations($product->id, $input_variations, $request->input('sku_type'));
-                    Log::debug('Variaciones variables creadas', ['product_id' => $product->id, 'variaciones' => count($input_variations)]);
                 }
             } elseif ($product->type == 'combo') {
 
@@ -717,24 +683,20 @@ class ProductController extends Controller
                 }
 
                 $this->productUtil->createSingleProductVariation($product->id, $product->sku, $request->input('item_level_purchase_price_total'), $request->input('purchase_price_inc_tax'), $request->input('profit_percent'), $request->input('selling_price'), $request->input('selling_price_inc_tax'), $combo_variations);
-                Log::debug('Variacion combo creada', ['product_id' => $product->id, 'items_combo' => count($combo_variations)]);
             }
 
             //Add product racks details.
             $product_racks = $request->get('product_racks', null);
             if (! empty($product_racks)) {
                 $this->productUtil->addRackDetails($business_id, $product->id, $product_racks);
-                Log::debug('Racks agregados', ['product_id' => $product->id]);
             }
 
             //Set Module fields
             if (! empty($request->input('has_module_data'))) {
                 $this->moduleUtil->getModuleData('after_product_saved', ['product' => $product, 'request' => $request]);
-                Log::debug('Modulo after_product_saved ejecutado', ['product_id' => $product->id]);
             }
 
             Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
-            Log::debug('Adjuntos de brochure procesados', ['product_id' => $product->id]);
 
             DB::commit();
             $output = ['success' => 1,
@@ -743,17 +705,6 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency('File:'.$e->getFile().'Line:'.$e->getLine().'Message:'.$e->getMessage());
-            Log::error('Fallo al crear producto', [
-                'business_id' => $business_id ?? null,
-                'usuario' => $request->session()->get('user.id'),
-                'nombre' => $request->input('name'),
-                'sku' => $request->input('sku'),
-                'single_dpp' => $request->input('single_dpp'),
-                'single_dpp_inc_tax' => $request->input('single_dpp_inc_tax'),
-                'single_dsp' => $request->input('single_dsp'),
-                'single_dsp_inc_tax' => $request->input('single_dsp_inc_tax'),
-                'error' => $e->getMessage(),
-            ]);
 
             $output = ['success' => 0,
                 'msg' => __('messages.something_went_wrong'),

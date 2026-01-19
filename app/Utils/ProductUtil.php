@@ -21,7 +21,6 @@ use App\VariationLocationDetails;
 use App\VariationTemplate;
 use App\VariationValueTemplate;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ProductUtil extends Util
 {
@@ -41,24 +40,6 @@ class ProductUtil extends Util
     {
         if (! is_object($product)) {
             $product = Product::find($product);
-        }
-
-        Log::debug('Creando variacion simple', [
-            'product_id' => $product->id ?? null,
-            'sku' => $sku,
-            'purchase_price_raw' => $purchase_price,
-            'dpp_inc_tax_raw' => $dpp_inc_tax,
-            'profit_percent_raw' => $profit_percent,
-            'selling_price_raw' => $selling_price,
-            'selling_price_inc_tax_raw' => $selling_price_inc_tax,
-        ]);
-
-        // Si no se envía precio con impuestos, usar el precio sin impuestos para no quedar en null/0.
-        if ($dpp_inc_tax === null || $dpp_inc_tax === '') {
-            $dpp_inc_tax = $purchase_price;
-        }
-        if ($selling_price_inc_tax === null || $selling_price_inc_tax === '') {
-            $selling_price_inc_tax = $selling_price;
         }
 
         //create product variations

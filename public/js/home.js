@@ -169,92 +169,60 @@ $(document).ready(function() {
     }
 });
 
-function update_statistics(start, end, type, index, location_id, user_id) {
-    var resolved_location_id = location_id;
-    if (resolved_location_id === undefined || resolved_location_id === null || resolved_location_id === '') {
-        if ($('#dashboard_location').length > 0) {
-            resolved_location_id = $('#dashboard_location').val();
-        } else {
-            resolved_location_id = '';
-        }
+function update_statistics(start, end) {
+    var location_id = '';
+    if ($('#dashboard_location').length > 0) {
+        location_id = $('#dashboard_location').val();
     }
-
-    var data = { start: start, end: end, location_id: resolved_location_id };
-    if (user_id !== undefined && user_id !== null && user_id !== '') {
-        data.user_id = user_id;
-    }
-
-    var selectors = {
-        total_purchase: '.total_purchase',
-        purchase_due: '.purchase_due',
-        total_sell: '.total_sell',
-        invoice_due: '.invoice_due',
-        total_expense: '.total_expense',
-        total_purchase_return: '.total_purchase_return',
-        total_sell_return: '.total_sell_return',
-        net: '.net',
-    };
-
-    var has_specific_target = type !== undefined && type !== null && type !== '' &&
-        index !== undefined && index !== null && index !== '';
-    if (has_specific_target) {
-        selectors = {};
-        selectors[type] = '.' + type + '_' + index;
-    }
-
+    var data = { start: start, end: end, location_id: location_id };
     //get purchase details
     var loader = '<i class="fas fa-sync fa-spin fa-fw margin-bottom"></i>';
-    $.each(selectors, function(key, selector) {
-        $(selector).html(loader);
-    });
+    $('.total_purchase').html(loader);
+    $('.purchase_due').html(loader);
+    $('.total_sell').html(loader);
+    $('.invoice_due').html(loader);
+    $('.total_expense').html(loader);
+    $('.total_purchase_return').html(loader);
+    $('.total_sell_return').html(loader);
+    $('.net').html(loader);
     $.ajax({
         method: 'get',
         url: '/home/get-totals',
         dataType: 'json',
         data: data,
         success: function(data) {
-            var values = {
-                total_purchase: data.total_purchase,
-                purchase_due: data.purchase_due,
-                total_sell: data.total_sell,
-                invoice_due: data.invoice_due,
-                total_expense: data.total_expense,
-                total_purchase_return: data.total_purchase_return - data.total_purchase_return_paid,
-                total_sell_return: data.total_sell_return - data.total_sell_return_paid,
-                net: data.net,
-            };
-
             //purchase details
-            $.each(selectors, function(key, selector) {
-                if (values[key] !== undefined) {
-                    $(selector).html(__currency_trans_from_en(values[key], true));
-                }
-            });
+            $('.total_purchase').html(__currency_trans_from_en(data.total_purchase, true));
+            $('.purchase_due').html(__currency_trans_from_en(data.purchase_due, true));
 
-            if (!has_specific_target) {
-                $('.total_sr').html(__currency_trans_from_en(data.total_sell_return, true));
-                $('.total_srp').html(__currency_trans_from_en(data.total_sell_return_paid, true));
-                $('.total_pr').html(__currency_trans_from_en(data.total_purchase_return, true));
-                $('.total_prp').html(__currency_trans_from_en(data.total_purchase_return_paid, true));
-            }
+            //sell details
+            $('.total_sell').html(__currency_trans_from_en(data.total_sell, true));
+            $('.invoice_due').html(__currency_trans_from_en(data.invoice_due, true));
+            //expense details
+            $('.total_expense').html(__currency_trans_from_en(data.total_expense, true));
+            var total_purchase_return = data.total_purchase_return - data.total_purchase_return_paid;
+            $('.total_purchase_return').html(__currency_trans_from_en(total_purchase_return, true));
+            var total_sell_return_due = data.total_sell_return - data.total_sell_return_paid;
+            $('.total_sell_return').html(__currency_trans_from_en(total_sell_return_due, true));
+            $('.total_sr').html(__currency_trans_from_en(data.total_sell_return, true));
+            $('.total_srp').html(__currency_trans_from_en(data.total_sell_return_paid, true));
+            $('.total_pr').html(__currency_trans_from_en(data.total_purchase_return, true));
+            $('.total_prp').html(__currency_trans_from_en(data.total_purchase_return_paid, true));
+            $('.net').html(__currency_trans_from_en(data.net, true));
 
             // assign tooltip total_sell_return 
-            if (!has_specific_target && $('#total_srp').length) {
-                var lang = $('#total_srp').data('value');
-                var splitlang = lang.split('-');
-                
-                var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return_paid, true) + "</span></p>";
-                $('#total_srp').attr('data-content', newContent);
-            }
+            var lang = $('#total_srp').data('value');
+            var splitlang = lang.split('-');
+            
+            var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_sell_return_paid, true) + "</span></p>";
+            $('#total_srp').attr('data-content', newContent)
             // assign tooltip total_purchase_return 
-            if (!has_specific_target && $('#total_prp').length) {
-                var lang = $('#total_prp').data('value');
-                var splitlang = lang.split('-');
-                
-                var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return_paid, true) + "</span></p>";
-                
-                $('#total_prp').attr('data-content', newContent);
-            }
+            var lang = $('#total_prp').data('value');
+            var splitlang = lang.split('-');
+            
+            var newContent = "<p class='mb-0 text-muted fs-10 mt-5'>" + splitlang[0] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return, true) + "</span><br>" + splitlang[1] + ": <span class=''>" + __currency_trans_from_en(data.total_purchase_return_paid, true) + "</span></p>";
+            
+            $('#total_prp').attr('data-content', newContent);
 
         },
     });
