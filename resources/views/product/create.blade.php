@@ -475,9 +475,6 @@ $(function () {
 </script>
 
 
-@endsection
-@section('javascript')
-    @parent
     <script>
         $(function(){
             var $materialsSelect = $('#materiales_select');

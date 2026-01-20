@@ -413,9 +413,6 @@
       __page_leave_confirmation('#product_add_form');
     });
   </script>
-@endsection
-@section('javascript')
-    @parent
     <script>
         $(function(){
             var materialQuantities = @json($material_quantities ?? []);
