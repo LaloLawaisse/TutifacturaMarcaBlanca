@@ -119,6 +119,14 @@
             <div class="form-group">
                 {!! Form::label('materiales', 'Insumos vinculados:') !!}
                 {!! Form::select('materiales[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'materiales_select']) !!}
+                <div class="input-group" style="margin-top:6px;">
+                    <input type="text" class="form-control" id="materiales_search_term" placeholder="Buscar insumos..." autocomplete="off">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" id="materiales_search_btn">
+                            <i class="fa fa-search"></i> Buscar
+                        </button>
+                    </span>
+                </div>
                 <p class="help-block">Seleccione los insumos usados para fabricar este producto.</p>
                 <div id="materiales_rows" class="table-responsive" style="margin-top:10px;">
                     <table class="table table-bordered" id="materiales_table">
@@ -413,6 +421,8 @@
             var materialQuantities = @json($material_quantities ?? []);
             var $materialsSelect = $('#materiales_select');
             var $materialsTableBody = $('#materiales_table tbody');
+            var $materialsSearchInput = $('#materiales_search_term');
+            var $materialsSearchBtn = $('#materiales_search_btn');
 
             function materialRowId(id) {
                 return 'material-row-' + id;
@@ -469,6 +479,33 @@
                 var data = e.params.data || {};
                 if (data.id) {
                     removeMaterialRow(data.id);
+                }
+            });
+
+            function triggerMaterialSearch() {
+                var term = ($materialsSearchInput.val() || '').trim();
+                $materialsSelect.select2('open');
+                var $searchField = $('.select2-container--open .select2-search__field');
+                if (!$searchField.length) {
+                    return;
+                }
+                if (term.length) {
+                    $searchField.val(term);
+                    $searchField.trigger('input');
+                } else {
+                    $searchField.trigger('focus');
+                }
+            }
+
+            $materialsSearchBtn.on('click', function (e) {
+                e.preventDefault();
+                triggerMaterialSearch();
+            });
+
+            $materialsSearchInput.on('keydown', function (e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    e.preventDefault();
+                    triggerMaterialSearch();
                 }
             });
             if (selectedMaterials && selectedMaterials.length) {
