@@ -445,6 +445,9 @@
             }
 
             var selectedMaterials = @json($product->materiales ?? []);
+            if ($materialsSelect.hasClass('select2-hidden-accessible')) {
+                $materialsSelect.select2('destroy');
+            }
             $materialsSelect.select2({
                 ajax: {
                     url: '{{ url('/products/materials-options') }}',
