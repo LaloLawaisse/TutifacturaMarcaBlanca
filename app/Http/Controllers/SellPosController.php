@@ -27,7 +27,10 @@
 
 namespace App\Http\Controllers;
 
-require_once '/www/wwwroot/www.gestionenorden.com/vendor/afipsdk/afip.php/src/Afip.php';  // Usar require_once para cargar la clase Afip
+$afipPath = base_path('vendor/afipsdk/afip.php/src/Afip.php');
+if (is_file($afipPath)) {
+    require_once $afipPath;
+}
 
 use Afip;
 use Illuminate\Support\Facades\Log;
@@ -204,8 +207,8 @@ public function create(Request $request)
 
     $payment_lines[] = $this->dummyPaymentLine;
 
-    $default_location = !empty($register_details->location_id) ? 
-        BusinessLocation::findOrFail($register_details->location_id) : null;
+    $default_location = !empty($register_details->location_id) ?
+        BusinessLocation::find($register_details->location_id) : null;
 
     $business_locations = BusinessLocation::forDropdown($business_id, false, true);
     $bl_attributes = $business_locations['attributes'];
@@ -213,16 +216,21 @@ public function create(Request $request)
 
     if (empty($default_location)) {
         foreach ($business_locations as $id => $name) {
-            $default_location = BusinessLocation::findOrFail($id);
-            break;
+            $default_location = BusinessLocation::find($id);
+            if (!empty($default_location)) {
+                break;
+            }
         }
     }
 
     $payment_types = $this->productUtil->payment_types(null, true, $business_id);
 
     $shortcuts = json_decode($business_details->keyboard_shortcuts, true);
-    $pos_settings = empty($business_details->pos_settings) ? 
+    $pos_settings = empty($business_details->pos_settings) ?
         $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
+    if (!is_array($pos_settings)) {
+        $pos_settings = $this->businessUtil->defaultPosSettings();
+    }
 
     $commsn_agnt_setting = $business_details->sales_cmsn_agnt;
     $commission_agent = [];
@@ -250,7 +258,8 @@ public function create(Request $request)
 
     $price_groups = SellingPriceGroup::forDropdown($business_id);
 
-    $default_price_group_id = !empty($default_location->selling_price_group_id) &&
+    $default_price_group_id = !empty($default_location) &&
+                              !empty($default_location->selling_price_group_id) &&
                               array_key_exists($default_location->selling_price_group_id, $price_groups) ?
                               $default_location->selling_price_group_id : null;
 
@@ -271,6 +280,9 @@ public function create(Request $request)
     $invoice_layouts = InvoiceLayout::forDropdown($business_id);
     $invoice_schemes = InvoiceScheme::forDropdown($business_id);
     $default_invoice_schemes = InvoiceScheme::getDefault($business_id);
+    if (empty($default_invoice_schemes)) {
+        $default_invoice_schemes = InvoiceScheme::where('business_id', $business_id)->first();
+    }
 
     $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
     $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
@@ -2057,7 +2069,7 @@ public function create(Request $request)
         // Valida y obtén la ruta del archivo como antes
         $transaction = Transaction::findOrFail($transaction_id);
         $filename = basename($transaction->factura_afip);
-        $file_path = '/www/wwwroot/www.gestionenorden.com/storage/app/public/facturas_afip/' . $filename;
+        $file_path = storage_path('app/public/facturas_afip/' . $filename);
         
         return response()->file($file_path);  // Muestra el PDF en el navegador
     }

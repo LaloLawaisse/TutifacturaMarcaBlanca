@@ -56,8 +56,11 @@
 	@if(!empty($pos_settings['show_invoice_layout']))
 	<div class="col-md-4">
 		<div class="form-group">
+		@php
+			$invoice_layout_id = !empty($default_location) ? $default_location->invoice_layout_id : null;
+		@endphp
 		{!! Form::select('invoice_layout_id', 
-					$invoice_layouts, $default_location->invoice_layout_id, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.select_invoice_layout'), 'id' => 'invoice_layout_id']); !!}
+					$invoice_layouts, $invoice_layout_id, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.select_invoice_layout'), 'id' => 'invoice_layout_id']); !!}
 		</div>
 	</div>
 	@endif
@@ -151,8 +154,8 @@
 
 	@if(!empty($pos_settings['show_invoice_scheme']))
 		@php
-			$invoice_scheme_id = $default_invoice_schemes->id;
-			if(!empty($default_location->invoice_scheme_id)) {
+			$invoice_scheme_id = !empty($default_invoice_schemes) ? $default_invoice_schemes->id : null;
+			if (!empty($default_location) && !empty($default_location->invoice_scheme_id)) {
 				$invoice_scheme_id = $default_location->invoice_scheme_id;
 			}
 		@endphp

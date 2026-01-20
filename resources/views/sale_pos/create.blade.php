@@ -30,12 +30,12 @@
 
                             {{-- <div class="box box-solid mb-12 @if (!isMobile()) mb-40 @endif"> --}}
                                 <div class="box-body pb-0">
-                                    {!! Form::hidden('location_id', $default_location->id ?? null, [
+                                    {!! Form::hidden('location_id', optional($default_location)->id, [
                                         'id' => 'location_id',
-                                        'data-receipt_printer_type' => !empty($default_location->receipt_printer_type)
+                                        'data-receipt_printer_type' => !empty($default_location) && !empty($default_location->receipt_printer_type)
                                             ? $default_location->receipt_printer_type
                                             : 'browser',
-                                        'data-default_payment_accounts' => $default_location->default_payment_accounts ?? '',
+                                        'data-default_payment_accounts' => !empty($default_location) ? ($default_location->default_payment_accounts ?? '') : '',
                                     ]) !!}
                                     <!-- sub_type -->
                                     {!! Form::hidden('sub_type', isset($sub_type) ? $sub_type : null) !!}
