@@ -255,6 +255,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/products/save_quick_product', [ProductController::class, 'saveQuickProduct']);
     Route::get('/products/get-combo-product-entry-row', [ProductController::class, 'getComboProductEntryRow']);
     Route::post('/products/toggle-woocommerce-sync', [ProductController::class, 'toggleWooCommerceSync']);
+    Route::get('/products/materials-options', [MaterialController::class, 'materialsOptions']);
 
     Route::resource('products', ProductController::class);
 
@@ -262,7 +263,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/materials/list', [MaterialController::class, 'index']);
     Route::post('/materials/adjust-stock/{id}', [MaterialController::class, 'adjustStock']);
     Route::get('/materials/products-options', [MaterialController::class, 'productsOptions']);
-    Route::get('/products/materials-options', [MaterialController::class, 'materialsOptions']);
     Route::resource('materials', MaterialController::class);
     Route::resource('fixed-costs', FixedCostController::class);
     Route::post('/store-proformas-orders', [SellPosController::class, 'storeProformasFromOrders'])->name('store.proformas.orders');
