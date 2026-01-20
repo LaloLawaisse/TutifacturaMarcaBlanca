@@ -482,27 +482,45 @@
                 }
             });
 
-            function triggerMaterialSearch() {
-                var term = ($materialsSearchInput.val() || '').trim();
-                $materialsSelect.select2('open');
-                var $searchField = $('.select2-container--open .select2-search__field');
-                if (!$searchField.length) {
-                    return;
-                }
-                if (term.length) {
-                    $searchField.val(term);
-                    $searchField.trigger('input');
-                } else {
-                    $searchField.trigger('focus');
-                }
+            var materialsSearchUrl = '{{ url('/products/materials-options') }}';
+
+            function appendMaterialOptions(results) {
+                (results || []).forEach(function (opt) {
+                    if (!opt || typeof opt.id === 'undefined') {
+                        return;
+                    }
+                    if ($materialsSelect.find('option[value="' + opt.id + '"]').length === 0) {
+                        var option = new Option(opt.text, opt.id, false, false);
+                        $materialsSelect.append(option);
+                    }
+                });
             }
 
-            $materialsSearchBtn.on('click', function (e) {
+            function triggerMaterialSearch() {
+                var term = ($materialsSearchInput.val() || '').trim();
+                $.ajax({
+                    url: materialsSearchUrl,
+                    dataType: 'json',
+                    data: { q: term },
+                    success: function (result) {
+                        appendMaterialOptions(result && result.results ? result.results : []);
+                        $materialsSelect.trigger('change.select2');
+                        $materialsSelect.select2('open');
+                        var $searchField = $('.select2-container--open .select2-search__field');
+                        if ($searchField.length) {
+                            $searchField.val(term);
+                            $searchField.trigger('input').trigger('keyup');
+                        }
+                    }
+                });
+            }
+
+            $(document).on('click', '#materiales_search_btn', function (e) {
                 e.preventDefault();
                 triggerMaterialSearch();
             });
 
-            $materialsSearchInput.on('keydown', function (e) {
+            $(document).on('keydown', '#materiales_search_term', function (e) {
                 if (e.key === 'Enter' || e.keyCode === 13) {
                     e.preventDefault();
                     triggerMaterialSearch();
