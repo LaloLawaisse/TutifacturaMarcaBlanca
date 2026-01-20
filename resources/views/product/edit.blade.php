@@ -119,14 +119,6 @@
             <div class="form-group">
                 {!! Form::label('materiales', 'Insumos vinculados:') !!}
                 {!! Form::select('materiales[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'materiales_select']) !!}
-                <div class="input-group" style="margin-top:6px;">
-                    <input type="text" class="form-control" id="materiales_search_term" placeholder="Buscar insumos..." autocomplete="off">
-                    <span class="input-group-btn">
-                        <button type="button" class="btn btn-default" id="materiales_search_btn">
-                            <i class="fa fa-search"></i> Buscar
-                        </button>
-                    </span>
-                </div>
                 <p class="help-block">Seleccione los insumos usados para fabricar este producto.</p>
                 <div id="materiales_rows" class="table-responsive" style="margin-top:10px;">
                     <table class="table table-bordered" id="materiales_table">
@@ -418,8 +410,6 @@
             var materialQuantities = @json($material_quantities ?? []);
             var $materialsSelect = $('#materiales_select');
             var $materialsTableBody = $('#materiales_table tbody');
-            var $materialsSearchInput = $('#materiales_search_term');
-            var $materialsSearchBtn = $('#materiales_search_btn');
 
             function materialRowId(id) {
                 return 'material-row-' + id;
@@ -479,50 +469,6 @@
                 }
             });
 
-            var materialsSearchUrl = '{{ url('/products/materials-options') }}';
-
-            function appendMaterialOptions(results) {
-                (results || []).forEach(function (opt) {
-                    if (!opt || typeof opt.id === 'undefined') {
-                        return;
-                    }
-                    if ($materialsSelect.find('option[value="' + opt.id + '"]').length === 0) {
-                        var option = new Option(opt.text, opt.id, false, false);
-                        $materialsSelect.append(option);
-                    }
-                });
-            }
-
-            function triggerMaterialSearch() {
-                var term = ($materialsSearchInput.val() || '').trim();
-                $.ajax({
-                    url: materialsSearchUrl,
-                    dataType: 'json',
-                    data: { q: term },
-                    success: function (result) {
-                        appendMaterialOptions(result && result.results ? result.results : []);
-                        $materialsSelect.trigger('change.select2');
-                        $materialsSelect.select2('open');
-                        var $searchField = $('.select2-container--open .select2-search__field');
-                        if ($searchField.length) {
-                            $searchField.val(term);
-                            $searchField.trigger('input').trigger('keyup');
-                        }
-                    }
-                });
-            }
-
-            $(document).on('click', '#materiales_search_btn', function (e) {
-                e.preventDefault();
-                triggerMaterialSearch();
-            });
-
-            $(document).on('keydown', '#materiales_search_term', function (e) {
-                if (e.key === 'Enter' || e.keyCode === 13) {
-                    e.preventDefault();
-                    triggerMaterialSearch();
-                }
-            });
             if (selectedMaterials && selectedMaterials.length) {
                 $.ajax({
                     url: '{{ url('/products/materials-options') }}',
