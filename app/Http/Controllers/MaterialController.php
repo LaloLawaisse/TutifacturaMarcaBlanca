@@ -398,7 +398,7 @@ class MaterialController extends Controller
         if (!empty($term)) {
             $query->where('nombre', 'like', '%'.$term.'%');
         }
-        $results = $query->select([\DB::raw('ID as id'), 'nombre as text'])->orderBy('nombre')->limit(50)->get();
+        $results = $query->select([\DB::raw('ID as id'), 'nombre as text', 'precio'])->orderBy('nombre')->limit(50)->get();
         return ['results' => $results];
     }
 

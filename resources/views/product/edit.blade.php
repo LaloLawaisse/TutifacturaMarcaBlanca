@@ -131,6 +131,10 @@
                         <tbody></tbody>
                     </table>
                 </div>
+                <div class="text-right" style="margin-top:6px;">
+                    <strong>Costo insumos total:</strong>
+                    <span id="materiales_total_cost">0.00</span>
+                </div>
             </div>
         </div>
 
@@ -418,6 +422,7 @@
             function addMaterialRow(data, qty) {
                 var id = data.id;
                 var text = data.text;
+                var price = parseFloat(data.precio);
                 qty = qty || 1;
 
                 if (!id || !text) {
@@ -427,18 +432,45 @@
                 if ($('#' + materialRowId(id)).length) {
                     return;
                 }
+                if (isNaN(price) && data.element) {
+                    price = parseFloat($(data.element).data('precio'));
+                }
+                if (isNaN(price)) {
+                    price = 0;
+                }
 
-                var rowHtml = '<tr id="' + materialRowId(id) + '" data-material-id="' + id + '">'
+                var rowHtml = '<tr id="' + materialRowId(id) + '" data-material-id="' + id + '" data-material-price="' + price + '">'
                     + '<td>' + $('<div>').text(text).html() + '</td>'
                     + '<td><input type="number" class="form-control input_number material-qty-input" '
-                    + 'name="materiales_qty[' + id + ']" min="0" step="0.01" value="' + qty + '"></td>'
+                    + 'name="materiales_qty[' + id + ']" min="0" step="1" value="' + qty + '"></td>'
                     + '</tr>';
 
                 $materialsTableBody.append(rowHtml);
+                updateMaterialsTotal();
             }
 
             function removeMaterialRow(id) {
                 $('#' + materialRowId(id)).remove();
+                updateMaterialsTotal();
+            }
+
+            function updateMaterialsTotal() {
+                var total = 0;
+                $materialsTableBody.find('tr').each(function () {
+                    var $row = $(this);
+                    var price = parseFloat($row.data('material-price'));
+                    if (isNaN(price)) {
+                        price = 0;
+                    }
+                    var qty = __read_number($row.find('.material-qty-input'));
+                    qty = qty === undefined || qty === null ? 0 : qty;
+                    total += price * qty;
+                });
+                if (typeof __currency_trans_from_en === 'function') {
+                    $('#materiales_total_cost').text(__currency_trans_from_en(total, true));
+                } else {
+                    $('#materiales_total_cost').text(total.toFixed(2));
+                }
             }
 
             var selectedMaterials = @json($product->materiales ?? []);
@@ -469,6 +501,10 @@
                 }
             });
 
+            $materialsTableBody.on('input change blur', '.material-qty-input', function () {
+                updateMaterialsTotal();
+            });
+
             if (selectedMaterials && selectedMaterials.length) {
                 $.ajax({
                     url: '{{ url('/products/materials-options') }}',
@@ -477,13 +513,19 @@
                         var $sel = $materialsSelect;
                         (result.results || []).forEach(function(opt){
                             var option = new Option(opt.text, opt.id, true, true);
+                            if (opt.precio !== undefined) {
+                                option.dataset.precio = opt.precio;
+                            }
                             $sel.append(option).trigger('change');
                             var qty = materialQuantities[opt.id] !== undefined ? materialQuantities[opt.id] : 1;
-                            addMaterialRow({id: opt.id, text: opt.text}, qty);
+                            addMaterialRow({id: opt.id, text: opt.text, precio: opt.precio}, qty);
                         });
+                        updateMaterialsTotal();
                     }
                 });
             }
+
+            updateMaterialsTotal();
         });
     </script>
 @endsection
