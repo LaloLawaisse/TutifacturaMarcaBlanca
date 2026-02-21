@@ -1,4 +1,5 @@
-@if($__is_woo_enabled)
+@php($hide_woocommerce_sidebar = true)
+@if(!$hide_woocommerce_sidebar && $__is_woo_enabled)
 	@if(auth()->user()->can('superadmin') || auth()->user()->can('woocommerce.syc_categories') || auth()->user()->can('woocommerce.sync_products') || auth()->user()->can('woocommerce.sync_orders') || auth()->user()->can('woocommerce.map_tax_rates') || auth()->user()->can('woocommerce.access_woocommerce_api_settings'))
 		<li class="bg-woocommerce treeview {{ in_array($request->segment(1), ['woocommerce']) ? 'active active-sub' : '' }}">
 		    <a href="#">

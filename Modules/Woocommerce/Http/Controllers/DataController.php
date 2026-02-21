@@ -127,11 +127,20 @@ class DataController extends Controller
     public function modifyAdminMenu()
     {
         $module_util = new ModuleUtil();
+        $hide_in_sidebar = true;
 
         $business_id = session()->get('user.business_id');
         $is_woo_enabled = (bool) $module_util->hasThePermissionInSubscription($business_id, 'woocommerce_module', 'superadmin_package');
 
-        if ($is_woo_enabled && (auth()->user()->can('woocommerce.syc_categories') || auth()->user()->can('woocommerce.sync_products') || auth()->user()->can('woocommerce.sync_orders') || auth()->user()->can('woocommerce.map_tax_rates') || auth()->user()->can('woocommerce.access_woocommerce_api_settings'))) {
+        if (
+            !$hide_in_sidebar
+            && $is_woo_enabled
+            && (auth()->user()->can('woocommerce.syc_categories')
+                || auth()->user()->can('woocommerce.sync_products')
+                || auth()->user()->can('woocommerce.sync_orders')
+                || auth()->user()->can('woocommerce.map_tax_rates')
+                || auth()->user()->can('woocommerce.access_woocommerce_api_settings'))
+        ) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->url(
                     action([\Modules\Woocommerce\Http\Controllers\WoocommerceController::class, 'index']),

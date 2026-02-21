@@ -27,6 +27,7 @@ class DataController extends Controller
     public function modifyAdminMenu()
     {
         $module_util = new ModuleUtil();
+        $hide_in_sidebar = true;
 
         if (auth()->user()->can('superadmin')) {
             $is_connector_enabled = $module_util->isModuleInstalled('Connector');
@@ -34,7 +35,7 @@ class DataController extends Controller
             $business_id = session()->get('user.business_id');
             $is_connector_enabled = (bool) $module_util->hasThePermissionInSubscription($business_id, 'connector_module', 'superadmin_package');
         }
-        if ($is_connector_enabled) {
+        if ($is_connector_enabled && !$hide_in_sidebar) {
             Menu::modify('admin-sidebar-menu', function ($menu) {
                 $menu->dropdown(
                     __('connector::lang.connector'),
