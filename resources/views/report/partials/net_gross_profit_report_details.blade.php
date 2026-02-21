@@ -33,4 +33,4 @@
     @if(!empty($module_data['add_to_net_profit']))
         + {{$module_data['label']}}
     @endif 
-@endforeach )</small>
+@endforeach + Costo de insumos )</small>

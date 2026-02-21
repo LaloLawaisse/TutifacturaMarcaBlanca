@@ -25,6 +25,7 @@ use App\TransactionSellLinesPurchaseLines;
 use App\Variation;
 use App\VariationLocationDetails;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use App\CashRegister;
 
@@ -5652,6 +5653,17 @@ class TransactionUtil extends Util
         $data['total_adjustment'] = $transaction_totals['total_adjustment'];
         $data['total_recovered'] = $transaction_totals['total_recovered'];
 
+        //Costo de insumos (tabla materiales)
+        $materials_query = DB::table('materiales')
+            ->where('business_id', $business_id);
+        if (!empty($start_date) && !empty($end_date) && Schema::hasColumn('materiales', 'created_at')) {
+            $materials_query->whereDate('created_at', '>=', $start_date)
+                ->whereDate('created_at', '<=', $end_date);
+        }
+        $data['materials_cost'] = (float) ($materials_query
+            ->select(DB::raw('SUM(unidades_en_stock * precio) as total_cost'))
+            ->value('total_cost') ?? 0);
+
         // $data['closing_stock'] = $data['closing_stock'] - $data['total_adjustment'];
 
         $data['total_reward_amount'] = ! empty($total_reward_amount) ? $total_reward_amount : 0;
@@ -5711,7 +5723,7 @@ class TransactionUtil extends Util
         //                         - $data['total_sell_return'];
         $data['net_profit'] = $module_total + $gross_profit
                                 + ($data['total_sell_round_off'] + $data['total_recovered'] + $data['total_sell_shipping_charge'] + $data['total_purchase_discount'] + $data['total_sell_additional_expense'] + $data['total_sell_return_discount']
-                                ) - ($data['total_reward_amount'] + $data['total_expense'] + $data['total_adjustment'] + $data['total_transfer_shipping_charges'] + $data['total_purchase_shipping_charge'] + $data['total_purchase_additional_expense'] + $data['total_sell_discount']
+                                ) - ($data['total_reward_amount'] + $data['total_expense'] + $data['materials_cost'] + $data['total_adjustment'] + $data['total_transfer_shipping_charges'] + $data['total_purchase_shipping_charge'] + $data['total_purchase_additional_expense'] + $data['total_sell_discount']
                                 );
 
         //get gross profit from Project Module

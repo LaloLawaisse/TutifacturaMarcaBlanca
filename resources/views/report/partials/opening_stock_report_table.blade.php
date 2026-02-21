@@ -34,6 +34,12 @@
         </td>
     </tr>
     <tr>
+        <th>Costo de insumos:</th>
+        <td>
+            <span class="display_currency" data-currency_symbol="true">{{$data['materials_cost'] ?? 0}}</span>
+        </td>
+    </tr>
+    <tr>
         <th>{{ __('lang_v1.total_purchase_shipping_charge') }}:</th>
         <td>
             <span class="display_currency" data-currency_symbol="true">{{$data['total_purchase_shipping_charge']}}</span>
