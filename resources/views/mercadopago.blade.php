@@ -76,10 +76,10 @@
         case 3:
             $amount = 45000;
             break;
-        case 4:
+        case 5:
             $amount = 75000;
             break;
-        case 5:
+        case 6:
             $amount = 99000;
             break;
         default:
@@ -156,9 +156,9 @@
                 } else if ({{ $amount }} === 45000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=3';
                 } else if ({{ $amount }} === 75000) {
-                  redirectUrl = 'https://www.gestionenorden.com/business/register?package=4';
-                } else if ({{ $amount }} === 99000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=5';
+                } else if ({{ $amount }} === 99000) {
+                  redirectUrl = 'https://www.gestionenorden.com/business/register?package=6';
                 }
               }
 
