@@ -3432,7 +3432,7 @@ s0aAzkjOsL0B6q4OccRgemc=
             'CUIT' => 20447009871,
             'cert' => $cert,  // Certificado en formato de cadena
             'key'  => $key,   // Clave privada en formato de cadena
-            'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+            'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
         ));
     
         try {

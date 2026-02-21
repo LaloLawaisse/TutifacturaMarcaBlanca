@@ -222,7 +222,7 @@ s0aAzkjOsL0B6q4OccRgemc=
             'CUIT' => $tax_id, 
             'cert' => $cert,  // Ruta al archivo de certificado
             'key' => $key,          // Ruta al archivo de clave privada
-            'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+            'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
         ));
 
         //$ta = $afip->ElectronicBilling->getTokenAuthorization(TRUE);
@@ -741,7 +741,7 @@ s0aAzkjOsL0B6q4OccRgemc=
             'CUIT' => $tax_id, 
             'cert' => $cert,  // Ruta al archivo de certificado
             'key' => $key,          // Ruta al archivo de clave privada
-            'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+            'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
         ));
 
         //$ta = $afip->ElectronicBilling->getTokenAuthorization(TRUE);
@@ -1238,7 +1238,7 @@ s0aAzkjOsL0B6q4OccRgemc=
             'CUIT' => $tax_id, 
             'cert' => $cert,  // Ruta al archivo de certificado
             'key' => $key,          // Ruta al archivo de clave privada
-            'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+            'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
         ));
 
         //$ta = $afip->ElectronicBilling->getTokenAuthorization(TRUE);
@@ -1963,7 +1963,7 @@ s0aAzkjOsL0B6q4OccRgemc=
                 'CUIT' => 20447009871,
                 'cert' => $cert,  // Certificado en formato de cadena
                 'key'  => $key,   // Clave privada en formato de cadena
-                'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+                'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
             ));
             // Consulta a taxpayer_details para saber si la empresa es monotributo y no responsable inscripto
             try {
@@ -2343,7 +2343,7 @@ s0aAzkjOsL0B6q4OccRgemc=
             'CUIT' => $tax_id, 
             'cert' => $cert,  // Ruta al archivo de certificado
             'key' => $key,          // Ruta al archivo de clave privada
-            'access_token' => 'gi72RbXfkm4DcfnmLSAOl1xnS1DvAMZfP6uFwQciVerrDlI3uJSEkgYU090AoGIw'
+            'access_token' => 'ZgLmATK6ZGR8DmxkM6N7vrGXDh093ayHTgmJTz2O9B0XUmzhXAbpp2chBbC0TvDO'
         ));
     
             $tax_types = $afip->ElectronicBilling->GetTaxTypes();
