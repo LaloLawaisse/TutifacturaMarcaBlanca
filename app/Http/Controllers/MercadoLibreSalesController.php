@@ -209,8 +209,7 @@ class MercadoLibreSalesController extends Controller
     
     
     public function processPayment(Request $request) {
-        MercadoPagoConfig::setAccessToken('APP_USR-5043808394529851-123117-6f4072928b9bcb1f01eaad1f3371b57e-221745631');
-        //MercadoPagoConfig::setAccessToken('APP_USR-7229588378581834-020701-2cc6240cd1ee88d818e9cdbc5b38d4cc-2253423125'); // Token de prueba
+        MercadoPagoConfig::setAccessToken('APP_USR-4808059872337204-021920-cf6452878ea64b54d662efac74c0fe8c-432276693');
         $payment_data = $request->all();
         
         

@@ -390,6 +390,7 @@ class MaterialController extends Controller
         $business_id = $request->session()->get('user.business_id');
         $ids = $request->get('ids');
         $term = $request->get('q');
+        $laborName = 'Mano de obra';
         $query = \DB::table('materiales')->where('business_id', $business_id);
         if (!empty($ids)) {
             $ids_array = array_map('intval', is_array($ids) ? $ids : explode(',', $ids));
@@ -399,6 +400,25 @@ class MaterialController extends Controller
             $query->where('nombre', 'like', '%'.$term.'%');
         }
         $results = $query->select([\DB::raw('ID as id'), 'nombre as text', 'precio'])->orderBy('nombre')->limit(50)->get();
+        foreach ($results as $row) {
+            $row->is_labor = (strcasecmp(trim($row->text), $laborName) === 0);
+        }
+
+        $hasLabor = collect($results)->contains(function ($row) {
+            return !empty($row->is_labor);
+        });
+
+        if (!$hasLabor && !empty($term)) {
+            $termLower = strtolower($term);
+            if (strpos($termLower, 'man') !== false || strpos($termLower, 'obra') !== false) {
+                $results->push((object) [
+                    'id' => 'labor',
+                    'text' => $laborName,
+                    'precio' => 0,
+                    'is_labor' => true,
+                ]);
+            }
+        }
         return ['results' => $results];
     }
 

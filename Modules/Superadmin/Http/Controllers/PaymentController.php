@@ -9,7 +9,7 @@ class PaymentController extends Controller
 {
     public function processPayment(Request $request)
     {
-        SDK::setAccessToken('APP_USR-7229588378581834-020701-2cc6240cd1ee88d818e9cdbc5b38d4cc-2253423125');
+        SDK::setAccessToken('APP_USR-4808059872337204-021920-cf6452878ea64b54d662efac74c0fe8c-432276693');
     
         $payment_data = $request->input('payment_data');
         $plan_id = $request->input('plan_id');

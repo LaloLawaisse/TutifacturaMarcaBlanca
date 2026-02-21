@@ -68,16 +68,19 @@
     $planId = request('planId') ?? 1;
     switch ($planId) {
         case 1:
-            $amount = 23000;
+            $amount = 12000;
             break;
         case 2:
-            $amount = 29000;
+            $amount = 25000;
             break;
         case 3:
-            $amount = 69000;
+            $amount = 45000;
+            break;
+        case 4:
+            $amount = 75000;
             break;
         case 5:
-            $amount = 144000;
+            $amount = 99000;
             break;
         default:
             $amount = 100; // Valor por defecto
@@ -87,7 +90,7 @@
 
   <script>
   // Inicialización de Mercado Pago
-  const mp = new MercadoPago('APP_USR-164dd449-93fb-444f-bb5c-6ed119e81774', { 
+  const mp = new MercadoPago('APP_USR-bebaa4f4-18a8-4dc4-905e-40e9014eb937', { 
     locale: 'es-AR',
     advancedFraudPrevention: true 
   });
@@ -146,13 +149,15 @@
 
               } else {
                 // Flujo por defecto (register): redirección según el monto (y paquete) obtenido.
-                if ({{ $amount }} === 23000) {
+                if ({{ $amount }} === 12000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=1';
-                } else if ({{ $amount }} === 29000) {
+                } else if ({{ $amount }} === 25000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=2';
-                } else if ({{ $amount }} === 69000) {
+                } else if ({{ $amount }} === 45000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=3';
-                } else if ({{ $amount }} === 144000) {
+                } else if ({{ $amount }} === 75000) {
+                  redirectUrl = 'https://www.gestionenorden.com/business/register?package=4';
+                } else if ({{ $amount }} === 99000) {
                   redirectUrl = 'https://www.gestionenorden.com/business/register?package=5';
                 }
               }

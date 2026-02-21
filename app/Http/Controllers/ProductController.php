@@ -8,6 +8,7 @@ use App\BusinessLocation;
 use App\Category;
 use App\Exports\ProductsExport;
 use App\Media;
+use App\Material;
 use App\Product;
 use App\ProductVariation;
 use App\PurchaseLine;
@@ -142,7 +143,7 @@ class ProductController extends Controller
                 'products.product_custom_field19', 'products.product_custom_field20',
                 'products.alert_quantity',
                 DB::raw('SUM(vld.qty_available) as current_stock'),
-                DB::raw('COALESCE(SUM(mp.quantity * mat.precio), 0) as material_cost'),
+                DB::raw('COALESCE(SUM(mp.quantity * COALESCE(mp.unit_price, mat.precio)), 0) as material_cost'),
                 DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
                 DB::raw('MIN(v.sell_price_inc_tax) as min_price'),
                 DB::raw('MAX(v.dpp_inc_tax) as max_purchase_price'),
@@ -439,7 +440,7 @@ class ProductController extends Controller
      * @param  array  $materialQuantities  [material_id => qty]
      * @return void
      */
-    protected function syncProductMaterialsPivot($business_id, $product_id, array $materialIds, array $materialQuantities): void
+    protected function syncProductMaterialsPivot($business_id, $product_id, array $materialIds, array $materialQuantities, array $materialPrices = []): void
     {
         $materialIds = array_values(array_unique(array_filter(array_map('intval', $materialIds))));
 
@@ -455,13 +456,29 @@ class ProductController extends Controller
             })
             ->delete();
 
-        // Insertar/actualizar cantidades
+        // Insertar/actualizar cantidades y precios unitarios (si vienen)
         foreach ($materialIds as $materialId) {
             $qty = 1;
             if (is_array($materialQuantities) && isset($materialQuantities[$materialId])) {
-                $qtyVal = (float) $materialQuantities[$materialId];
+                $qtyVal = $this->productUtil->num_uf($materialQuantities[$materialId]);
                 if ($qtyVal > 0) {
                     $qty = $qtyVal;
+                }
+            }
+
+            $unitPrice = null;
+            if (is_array($materialPrices) && array_key_exists($materialId, $materialPrices)) {
+                $rawPrice = $materialPrices[$materialId];
+                if ($rawPrice === 0 || $rawPrice === '0' || $rawPrice === '0.0' || $rawPrice === '0.00') {
+                    $unitPrice = 0;
+                } elseif ($rawPrice !== null && $rawPrice !== '') {
+                    $priceVal = $this->productUtil->num_uf($rawPrice);
+                    if (is_numeric($priceVal)) {
+                        $priceVal = (float) $priceVal;
+                        if ($priceVal >= 0) {
+                            $unitPrice = $priceVal;
+                        }
+                    }
                 }
             }
 
@@ -473,11 +490,89 @@ class ProductController extends Controller
                 ],
                 [
                     'quantity' => $qty,
+                    'unit_price' => $unitPrice,
                     'updated_at' => now(),
                     'created_at' => now(),
                 ]
             );
         }
+    }
+
+    /**
+     * Normaliza materiales y reemplaza el token de mano de obra por un material real.
+     *
+     * @param  int    $business_id
+     * @param  array  $materialIds
+     * @param  array  $materialQuantities
+     * @param  array  $materialPrices
+     * @return array
+     */
+    protected function normalizeMaterialInputs($business_id, $materialIds, $materialQuantities, $materialPrices): array
+    {
+        $materialIds = is_array($materialIds) ? $materialIds : [];
+        $materialQuantities = is_array($materialQuantities) ? $materialQuantities : [];
+        $materialPrices = is_array($materialPrices) ? $materialPrices : [];
+
+        $laborTokens = ['labor', 'mano_de_obra', 'mano de obra'];
+        $needsLabor = false;
+        foreach ($materialIds as $id) {
+            if (is_string($id) && in_array(strtolower(trim($id)), $laborTokens, true)) {
+                $needsLabor = true;
+                break;
+            }
+        }
+
+        if ($needsLabor) {
+            $laborId = $this->resolveLaborMaterialId($business_id);
+
+            foreach ($materialIds as $k => $id) {
+                if (is_string($id) && in_array(strtolower(trim($id)), $laborTokens, true)) {
+                    $materialIds[$k] = $laborId;
+                }
+            }
+
+            foreach ($laborTokens as $token) {
+                if (array_key_exists($token, $materialQuantities) && !array_key_exists($laborId, $materialQuantities)) {
+                    $materialQuantities[$laborId] = $materialQuantities[$token];
+                }
+                if (array_key_exists($token, $materialPrices) && !array_key_exists($laborId, $materialPrices)) {
+                    $materialPrices[$laborId] = $materialPrices[$token];
+                }
+                unset($materialQuantities[$token], $materialPrices[$token]);
+            }
+        }
+
+        $materialIds = array_values(array_unique(array_filter(array_map('intval', $materialIds))));
+
+        return [$materialIds, $materialQuantities, $materialPrices];
+    }
+
+    /**
+     * Obtiene o crea el material "Mano de obra" para la empresa.
+     *
+     * @param  int  $business_id
+     * @return int
+     */
+    protected function resolveLaborMaterialId($business_id): int
+    {
+        $laborName = 'Mano de obra';
+        $labor = Material::where('business_id', $business_id)
+            ->whereRaw('LOWER(nombre) = ?', [strtolower($laborName)])
+            ->first();
+
+        if ($labor) {
+            return (int) $labor->ID;
+        }
+
+        $labor = Material::create([
+            'business_id' => $business_id,
+            'nombre' => $laborName,
+            'precio' => 0,
+            'unidades_en_stock' => 0,
+            'productos_linkeados' => [],
+        ]);
+
+        return (int) $labor->ID;
     }
 
     /**
@@ -664,18 +759,16 @@ class ProductController extends Controller
 
             // Vincular materiales seleccionados al producto y actualizar insumos
             $material_ids = $request->input('materiales', []);
-            if (!is_array($material_ids)) {
-                $material_ids = [];
-            }
-            $material_ids = array_values(array_unique(array_filter(array_map('intval', $material_ids))));
+            $material_qty = $request->input('materiales_qty', []);
+            $material_prices = $request->input('materiales_price', []);
+            [$material_ids, $material_qty, $material_prices] = $this->normalizeMaterialInputs($business_id, $material_ids, $material_qty, $material_prices);
 
             $product->materiales = $material_ids;
             $product->save();
             Log::debug('Materiales asignados a producto', ['product_id' => $product->id, 'materiales' => $material_ids]);
 
             // Actualizar pivot con cantidades
-            $material_qty = $request->input('materiales_qty', []);
-            $this->syncProductMaterialsPivot($business_id, $product->id, $material_ids, $material_qty);
+            $this->syncProductMaterialsPivot($business_id, $product->id, $material_ids, $material_qty, $material_prices);
             Log::debug('Pivot materiales sincronizado', ['product_id' => $product->id, 'cant_materiales' => count($material_ids)]);
 
             // Mantener JSON productos_linkeados en materiales
@@ -830,6 +923,12 @@ class ProductController extends Controller
             ->pluck('quantity', 'material_id')
             ->toArray();
 
+        $material_prices = DB::table('material_product')
+            ->where('business_id', $business_id)
+            ->where('product_id', $product->id)
+            ->pluck('unit_price', 'material_id')
+            ->toArray();
+
         //Sub-category
         $sub_categories = [];
         $sub_categories = Category::where('business_id', $business_id)
@@ -882,7 +981,8 @@ class ProductController extends Controller
                     'warranties',
                     'pos_module_data',
                     'alert_quantity',
-                    'material_quantities'
+                    'material_quantities',
+                    'material_prices'
                 ));
     }
 
@@ -1006,18 +1106,16 @@ class ProductController extends Controller
             $old_material_ids = array_values(array_unique(array_filter(array_map('intval', $old_material_ids))));
 
             $new_material_ids = $request->input('materiales', []);
-            if (!is_array($new_material_ids)) {
-                $new_material_ids = [];
-            }
-            $new_material_ids = array_values(array_unique(array_filter(array_map('intval', $new_material_ids))));
+            $material_qty = $request->input('materiales_qty', []);
+            $material_prices = $request->input('materiales_price', []);
+            [$new_material_ids, $material_qty, $material_prices] = $this->normalizeMaterialInputs($business_id, $new_material_ids, $material_qty, $material_prices);
 
             $product->materiales = $new_material_ids;
             $product->save();
             $product->touch();
 
             // Actualizar pivot de cantidades
-            $material_qty = $request->input('materiales_qty', []);
-            $this->syncProductMaterialsPivot($business_id, $product->id, $new_material_ids, $material_qty);
+            $this->syncProductMaterialsPivot($business_id, $product->id, $new_material_ids, $material_qty, $material_prices);
 
             // Mantener JSON productos_linkeados en materiales
             $this->syncMaterialsForProduct($product, $old_material_ids, $new_material_ids, $business_id);

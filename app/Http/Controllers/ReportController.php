@@ -196,7 +196,7 @@ class ReportController extends Controller
             $query->where('t.location_id', $location_id);
         }
 
-        $total = $query->select(DB::raw('SUM(tsl.quantity * mp.quantity * mat.precio) as total_cost'))->value('total_cost');
+        $total = $query->select(DB::raw('SUM(tsl.quantity * mp.quantity * COALESCE(mp.unit_price, mat.precio)) as total_cost'))->value('total_cost');
 
         return (float) ($total ?? 0);
     }

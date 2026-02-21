@@ -92,13 +92,15 @@
                    data-plan-id="{{ $package->id }}"
                    data-preapproval-plan="
                        @if($package->id == 1)
-                           2c93808493dee0d001941ea48af21d5a
+                           c2fc1d4fe696417099ef52e886c0b450
                        @elseif($package->id == 2)
-                           2c93808493dee0d001941ea517821d5b
+                           430cce89e246474d80b0d1bf27e4d355
                        @elseif($package->id == 3)
-                           2c93808493dee09001941ea5b5131d6c
-                       @elseif($package->id == 5)
-                           2c93808495b859210195d4c1bde10fab
+                           c02534b202f3482795b395fa13966161
+                       @elseif($package->id == 4)
+                           ecc3808419ec4888879ab3f0cd149a7f
+                       @elseif($package->id == 6)
+                           33736e274f94493a93062d0ff15e7a72
                        @endif">
                     @if($package->price != 0)
                         @lang('superadmin::lang.register_subscribe')
@@ -112,13 +114,15 @@
                    data-plan-id="{{ $package->id }}"
                    data-preapproval-plan="
                        @if($package->id == 1)
-                           2c93808493dee0d001941ea48af21d5a
+                           c2fc1d4fe696417099ef52e886c0b450
                        @elseif($package->id == 2)
-                           2c93808493dee0d001941ea517821d5b
+                           430cce89e246474d80b0d1bf27e4d355
                        @elseif($package->id == 3)
-                           2c93808493dee09001941ea5b5131d6c
-                       @elseif($package->id == 5)
-                           2c93808495b859210195d4c1bde10fab
+                           c02534b202f3482795b395fa13966161
+                       @elseif($package->id == 4)
+                           ecc3808419ec4888879ab3f0cd149a7f
+                       @elseif($package->id == 6)
+                           33736e274f94493a93062d0ff15e7a72
                        @endif"
                    data-action-type="nonregister">
                     @if($package->price != 0)

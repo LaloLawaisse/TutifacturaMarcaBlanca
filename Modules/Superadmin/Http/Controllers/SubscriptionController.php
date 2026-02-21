@@ -147,8 +147,8 @@ class SubscriptionController extends BaseController
             }
         
             
-            // NUEVO BLOQUE PARA EL PAQUETE DE 23000
-            if ($package->price == 23000 || $package->price == 29000 || $package->price == 69000 || $package->price == 144000) {
+            // NUEVO BLOQUE PARA EL PAQUETE DE 12000
+            if ($package->price == 12000 || $package->price == 25000 || $package->price == 45000 || $package->price == 75000 || $package->price == 99000) {
                 $gateway = 'automatic_activation';
                 $payment_transaction_id = 'MERCADOPAGO';
                 $user_id = request()->session()->get('user.id');

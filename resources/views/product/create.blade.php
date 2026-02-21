@@ -126,6 +126,7 @@
                             <tr>
                                 <th>Insumo</th>
                                 <th style="width:120px;">Cantidad</th>
+                                <th style="width:140px;">Precio</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -484,6 +485,7 @@ $(function () {
                 var id = data.id;
                 var text = data.text;
                 var price = parseFloat(data.precio);
+                var isLabor = data.is_labor || (data.element && $(data.element).data('is_labor'));
                 qty = qty || 1;
 
                 if (!id || !text) {
@@ -500,10 +502,20 @@ $(function () {
                     price = 0;
                 }
 
+                var priceDisplay = price.toFixed(2);
+                var priceCellHtml = '';
+                if (isLabor) {
+                    priceCellHtml = '<input type="text" class="form-control input_number material-price-input" '
+                        + 'data-decimal="no_neg" name="materiales_price[' + id + ']" value="' + price + '">';
+                } else {
+                    priceCellHtml = '<span class="material-price-display">' + priceDisplay + '</span>';
+                }
+
                 var rowHtml = '<tr id="' + materialRowId(id) + '" data-material-id="' + id + '" data-material-price="' + price + '">'
                     + '<td>' + $('<div>').text(text).html() + '</td>'
                     + '<td><input type="number" class="form-control input_number material-qty-input" '
-                    + 'name="materiales_qty[' + id + ']" min="0" step="1" value="' + qty + '"></td>'
+                    + 'name="materiales_qty[' + id + ']" min="0" step="0.1" value="' + qty + '"></td>'
+                    + '<td>' + priceCellHtml + '</td>'
                     + '</tr>';
 
                 $materialsTableBody.append(rowHtml);
@@ -519,7 +531,13 @@ $(function () {
                 var total = 0;
                 $materialsTableBody.find('tr').each(function () {
                     var $row = $(this);
-                    var price = parseFloat($row.data('material-price'));
+                    var price = 0;
+                    var $priceInput = $row.find('.material-price-input');
+                    if ($priceInput.length) {
+                        price = __read_number($priceInput);
+                    } else {
+                        price = parseFloat($row.data('material-price'));
+                    }
                     if (isNaN(price)) {
                         price = 0;
                     }
@@ -556,7 +574,7 @@ $(function () {
                 }
             });
 
-            $materialsTableBody.on('input change blur', '.material-qty-input', function () {
+            $materialsTableBody.on('input change blur', '.material-qty-input, .material-price-input', function () {
                 updateMaterialsTotal();
             });
 
