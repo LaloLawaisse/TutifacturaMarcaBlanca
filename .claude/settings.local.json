@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"materials_cost\\\\|profit_loss\" /d/TutifacturaMarcaBlanca/resources/views/ --include=*.php -l)"
+    ]
+  }
+}

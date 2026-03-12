@@ -1359,4 +1359,22 @@ return [
     'materials_cost_purchased' => 'Costo de insumos comprados',
     'materials_cost_sold' => 'Costo de insumos vendidos',
     'materials_cost_help' => 'Usa el rango de fechas para calcular el costo de insumos comprados y consumidos en ventas.',
+
+    // Reporte General
+    'general_report' => 'Reporte General',
+    'general_report_total_sales' => 'Total de ventas',
+    'general_report_materials_cost' => 'Costo de productos vendidos',
+    'general_report_fixed_costs' => 'Costos fijos',
+    'general_report_taxes' => 'Impuestos',
+    'general_report_add_tax' => 'Agregar impuesto',
+    'general_report_tax_name' => 'Nombre del impuesto',
+    'general_report_tax_value' => 'Valor',
+    'general_report_generate' => 'Generar reporte',
+    'general_report_result' => 'Resultado del reporte',
+    'general_report_subtotal' => 'Subtotal (ventas − costos)',
+    'general_report_total_taxes' => 'Total impuestos',
+    'general_report_net' => 'Resultado neto',
+    'general_report_period_this_month' => 'Este mes',
+    'general_report_period_this_year' => 'Este año',
+    'general_report_period_last_month' => 'Mes anterior',
 ];

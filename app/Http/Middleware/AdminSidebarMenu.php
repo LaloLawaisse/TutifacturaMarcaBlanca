@@ -780,6 +780,12 @@ class AdminSidebarMenu
                             );
                         }
 
+                        $sub->url(
+                            action([\App\Http\Controllers\ReportController::class, 'generalReport']),
+                            __('lang_v1.general_report'),
+                            ['icon' => '', 'active' => request()->segment(2) == 'general-report']
+                        );
+
                         if ($is_admin) {
                             $sub->url(
                                 action([\App\Http\Controllers\ReportController::class, 'activityLog']),

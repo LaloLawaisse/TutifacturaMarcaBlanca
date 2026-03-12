@@ -202,6 +202,84 @@ class ReportController extends Controller
     }
 
     /**
+     * Reporte general: ventas totales, costo de productos vendidos, costos fijos.
+     */
+    public function generalReport(Request $request)
+    {
+        if (! auth()->user()->can('purchase_n_sell_report.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+
+        if ($request->ajax()) {
+            $start_date = $request->get('start_date');
+            $end_date   = $request->get('end_date');
+
+            // Total ventas (transacciones finales de tipo venta)
+            $total_sales = (float) DB::table('transactions')
+                ->where('business_id', $business_id)
+                ->where('type', 'sell')
+                ->where('status', 'final')
+                ->when($start_date, fn($q) => $q->whereDate('transaction_date', '>=', $start_date))
+                ->when($end_date,   fn($q) => $q->whereDate('transaction_date', '<=', $end_date))
+                ->sum('final_total');
+
+            // Costo de insumos consumidos en productos vendidos
+            $materials_cost = $this->getMaterialsSoldCost($business_id, $start_date, $end_date);
+
+            // Costos fijos acumulados en el período
+            $fixed_costs = $this->getFixedCostsTotalForPeriod($business_id, $start_date, $end_date);
+
+            return response()->json([
+                'total_sales'    => $total_sales,
+                'materials_cost' => $materials_cost,
+                'fixed_costs'    => $fixed_costs,
+            ]);
+        }
+
+        return view('report.general_report');
+    }
+
+    /**
+     * Calcula el total de costos fijos activos que caen dentro del período indicado.
+     * Cada costo fijo tiene un día del mes en que se aplica; se cuenta cuántas veces
+     * ese día cae dentro del rango de fechas.
+     */
+    protected function getFixedCostsTotalForPeriod($business_id, $start_date, $end_date)
+    {
+        $costs = \App\FixedCost::where('business_id', $business_id)
+            ->where('active', true)
+            ->get(['amount', 'day_of_month']);
+
+        if ($costs->isEmpty() || empty($start_date) || empty($end_date)) {
+            return (float) ($costs->sum('amount') ?: 0);
+        }
+
+        $start = \Carbon\Carbon::parse($start_date)->startOfDay();
+        $end   = \Carbon\Carbon::parse($end_date)->endOfDay();
+
+        $total = 0.0;
+        foreach ($costs as $cost) {
+            $dom     = (int) $cost->day_of_month;
+            $current = $start->copy()->startOfMonth();
+
+            while ($current->lte($end)) {
+                $actualDay = min($dom, $current->daysInMonth);
+                $dueDate   = $current->copy()->day($actualDay);
+
+                if ($dueDate->gte($start) && $dueDate->lte($end)) {
+                    $total += (float) $cost->amount;
+                }
+
+                $current->addMonthNoOverflow();
+            }
+        }
+
+        return $total;
+    }
+
+    /**
      * Shows product report of a business
      *
      * @return \Illuminate\Http\Response
