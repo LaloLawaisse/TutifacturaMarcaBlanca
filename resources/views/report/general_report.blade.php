@@ -155,6 +155,9 @@
 <script>
 $(function () {
 
+    // Abrir filtros automáticamente al cargar
+    $('#collapseFilter').addClass('in').css('height', '');
+
     // --- Date pickers ---
     $('#gr_start_date, #gr_end_date').datetimepicker({
         format: moment_date_format,
@@ -271,8 +274,100 @@ $(function () {
 
     // --- Print ---
     $('#btn_print_report').on('click', function () {
-        window.print();
+        openPrintWindow();
     });
+
+    function openPrintWindow() {
+        var period   = $('#gr_period_label').text();
+        var sales    = $('#gr_sum_sales').text();
+        var materials = $('#gr_sum_materials').text();
+        var fixed    = $('#gr_sum_fixed').text();
+        var subtotal = $('#gr_subtotal').text();
+        var taxTotal = $('#gr_total_taxes_sum').text();
+        var net      = $('#gr_net_result').text();
+
+        // Build tax rows HTML
+        var taxRowsHtml = '';
+        $('#gr_taxes_summary_rows tr').each(function () {
+            var cells = $(this).find('td');
+            if (cells.length === 2) {
+                taxRowsHtml += '<tr><td class="label-col">' + $(cells[0]).text() + '</td>' +
+                               '<td class="value-col">' + $(cells[1]).text() + '</td></tr>';
+            }
+        });
+
+        var html = '<!DOCTYPE html><html lang="es"><head>' +
+            '<meta charset="UTF-8">' +
+            '<title>@lang("lang_v1.general_report")</title>' +
+            '<style>' +
+                '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+                'body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #fff; padding: 40px; }' +
+                '.report-wrapper { max-width: 680px; margin: 0 auto; }' +
+                '.report-header { border-bottom: 3px solid #00434a; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }' +
+                '.report-header .title { font-size: 22px; font-weight: 700; color: #00434a; letter-spacing: 0.5px; }' +
+                '.report-header .period { font-size: 12px; color: #555; text-align: right; }' +
+                '.report-header .period strong { display: block; font-size: 13px; color: #1a1a1a; }' +
+                '.section-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #00434a; margin-bottom: 8px; margin-top: 28px; }' +
+                'table { width: 100%; border-collapse: collapse; }' +
+                'table td { padding: 9px 12px; border-bottom: 1px solid #e8e8e8; }' +
+                'table .label-col { color: #444; }' +
+                'table .value-col { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 120px; }' +
+                'tr.income td { background: #f0faf4; }' +
+                'tr.income .value-col { color: #1a7a4a; font-weight: 700; }' +
+                'tr.cost td { background: #fff8f0; }' +
+                'tr.cost .value-col { color: #c0392b; }' +
+                'tr.tax td { background: #fffbf0; }' +
+                'tr.tax .value-col { color: #b7800a; }' +
+                'tr.subtotal td { background: #f4f8fb; border-top: 2px solid #c5d8e8; border-bottom: 2px solid #c5d8e8; }' +
+                'tr.subtotal .label-col { font-weight: 600; }' +
+                'tr.subtotal .value-col { font-weight: 700; color: #1a5a8a; font-size: 14px; }' +
+                'tr.net td { background: #00434a; border-top: none; border-bottom: none; }' +
+                'tr.net .label-col { color: #fff; font-weight: 700; font-size: 14px; }' +
+                'tr.net .value-col { color: #7fffd4; font-weight: 700; font-size: 16px; }' +
+                '.divider { height: 1px; background: #e0e0e0; margin: 6px 0; }' +
+                '.footer { margin-top: 32px; border-top: 1px solid #ddd; padding-top: 10px; font-size: 11px; color: #999; text-align: right; }' +
+                '@media print {' +
+                    'body { padding: 20px; }' +
+                    'tr.net td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+                    'tr.income td, tr.cost td, tr.tax td, tr.subtotal td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+                '}' +
+            '</style>' +
+            '</head><body>' +
+            '<div class="report-wrapper">' +
+
+                '<div class="report-header">' +
+                    '<div class="title">@lang("lang_v1.general_report")</div>' +
+                    '<div class="period">Período<strong>' + period + '</strong></div>' +
+                '</div>' +
+
+                '<div class="section-title">Ingresos</div>' +
+                '<table>' +
+                    '<tr class="income"><td class="label-col">@lang("lang_v1.general_report_total_sales")</td><td class="value-col">' + sales + '</td></tr>' +
+                '</table>' +
+
+                '<div class="section-title">Egresos</div>' +
+                '<table>' +
+                    '<tr class="cost"><td class="label-col">@lang("lang_v1.general_report_materials_cost")</td><td class="value-col">' + materials + '</td></tr>' +
+                    '<tr class="cost"><td class="label-col">@lang("lang_v1.general_report_fixed_costs")</td><td class="value-col">' + fixed + '</td></tr>' +
+                '</table>' +
+
+                (taxRowsHtml ? '<div class="section-title">@lang("lang_v1.general_report_taxes")</div><table>' + taxRowsHtml.replace(/<tr>/g, '<tr class="tax">') + '</table>' : '') +
+
+                '<table style="margin-top: 16px;">' +
+                    '<tr class="subtotal"><td class="label-col">@lang("lang_v1.general_report_subtotal")</td><td class="value-col">' + subtotal + '</td></tr>' +
+                    (taxRowsHtml ? '<tr><td class="label-col" style="color:#b7800a;">@lang("lang_v1.general_report_total_taxes")</td><td class="value-col" style="text-align:right;color:#b7800a;">' + taxTotal + '</td></tr>' : '') +
+                    '<tr class="net"><td class="label-col">@lang("lang_v1.general_report_net")</td><td class="value-col">' + net + '</td></tr>' +
+                '</table>' +
+
+                '<div class="footer">Generado el ' + moment().format('DD/MM/YYYY HH:mm') + '</div>' +
+            '</div>' +
+            '<script>window.onload = function(){ window.print(); }<\/script>' +
+            '</body></html>';
+
+        var win = window.open('', '_blank', 'width=800,height=700');
+        win.document.write(html);
+        win.document.close();
+    }
 
 });
 </script>
