@@ -210,15 +210,19 @@ class MaterialController extends Controller
           // Actualiza JSON products.materiales
           $this->syncProductsForMaterial($material, $oldProductIds, $newProductIds, $business_id, $materialId);
 
-          // Sincroniza pivot para costo de insumos usando cantidades
+          // Sincroniza pivot para costo de insumos usando cantidades.
+          // Solo elimina filas de productos que fueron explícitamente desvinculados
+          // (estaban en oldProductIds pero ya no están en newProductIds).
+          // NO toca filas creadas desde el lado del producto.
           $productQuantities = $request->input('productos_qty', []);
-          DB::table('material_product')
-              ->where('business_id', $business_id)
-              ->where('material_id', $materialId)
-              ->when(!empty($newProductIds), function ($q) use ($newProductIds) {
-                  $q->whereNotIn('product_id', $newProductIds);
-              })
-              ->delete();
+          $removedProductIds = array_values(array_diff($oldProductIds, $newProductIds));
+          if (!empty($removedProductIds)) {
+              DB::table('material_product')
+                  ->where('business_id', $business_id)
+                  ->where('material_id', $materialId)
+                  ->whereIn('product_id', $removedProductIds)
+                  ->delete();
+          }
 
           foreach ($newProductIds as $productId) {
               $qty = 1;
@@ -243,19 +247,47 @@ class MaterialController extends Controller
               );
           }
 
-        // Propagar el nuevo precio a unit_price en la tabla pivot para que
-        // "costo insumos" de los productos se actualice automáticamente
-        $affected = DB::table('material_product')
+        // Propagar el nuevo precio a TODOS los productos que usan este material,
+        // buscando tanto en la tabla pivot como en el JSON products.materiales.
+        // Si no existe fila en el pivot, se crea con quantity=1 (default).
+        $productsWithMaterial = DB::table('products')
+            ->where('business_id', $business_id)
+            ->whereJsonContains('materiales', $materialId)
+            ->pluck('id');
+
+        $pivotUpdated = 0;
+        foreach ($productsWithMaterial as $productId) {
+            DB::table('material_product')->updateOrInsert(
+                [
+                    'business_id' => $business_id,
+                    'product_id'  => (int) $productId,
+                    'material_id' => $materialId,
+                ],
+                [
+                    'unit_price'  => $material->precio,
+                    'updated_at'  => now(),
+                    'created_at'  => now(),
+                ]
+            );
+            $pivotUpdated++;
+        }
+
+        // Verificar qué quedó realmente en la DB
+        $precioEnDB  = DB::table('materiales')->where('ID', $materialId)->value('precio');
+        $pivotEnDB   = DB::table('material_product')
             ->where('business_id', $business_id)
             ->where('material_id', $materialId)
-            ->update(['unit_price' => $material->precio, 'updated_at' => now()]);
+            ->get(['product_id', 'unit_price', 'quantity'])
+            ->toArray();
 
         \Log::info('[Material Update] Precio propagado a pivot', [
-            'material_id'        => $materialId,
-            'material_name'      => $material->nombre,
-            'nuevo_precio'       => $material->precio,
-            'newProductIds'      => $newProductIds,
-            'pivot_rows_updated' => $affected,
+            'material_id'          => $materialId,
+            'material_name'        => $material->nombre,
+            'nuevo_precio_modelo'  => $material->precio,
+            'precio_real_en_db'    => $precioEnDB,
+            'products_found_json'  => $productsWithMaterial->toArray(),
+            'pivot_rows_upserted'  => $pivotUpdated,
+            'pivot_rows_en_db'     => $pivotEnDB,
         ]);
 
         return redirect()->action([self::class, 'index'])->with('status', ['success' => 1, 'msg' => __('messages.updated_success')]);
