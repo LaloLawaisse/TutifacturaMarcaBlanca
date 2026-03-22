@@ -244,10 +244,34 @@ class MaterialController extends Controller
 
         // Propagar el nuevo precio a unit_price en la tabla pivot para que
         // "costo insumos" de los productos se actualice automáticamente
-        DB::table('material_product')
+        $pivotRowsBeforeUpdate = DB::table('material_product')
+            ->where('business_id', $business_id)
+            ->where('material_id', $material->ID)
+            ->get();
+
+        \Log::info('[Material Update] Iniciando propagación de precio', [
+            'material_id'   => $material->ID,
+            'material_name' => $material->nombre,
+            'nuevo_precio'  => $material->precio,
+            'business_id'   => $business_id,
+            'newProductIds' => $newProductIds,
+            'pivot_rows_antes' => $pivotRowsBeforeUpdate->map(fn($r) => [
+                'product_id' => $r->product_id,
+                'quantity'   => $r->quantity,
+                'unit_price' => $r->unit_price,
+            ])->toArray(),
+        ]);
+
+        $affected = DB::table('material_product')
             ->where('business_id', $business_id)
             ->where('material_id', $material->ID)
             ->update(['unit_price' => $material->precio, 'updated_at' => now()]);
+
+        \Log::info('[Material Update] Filas pivot actualizadas', [
+            'material_id' => $material->ID,
+            'affected'    => $affected,
+            'unit_price_seteado' => $material->precio,
+        ]);
 
         return redirect()->action([self::class, 'index'])->with('status', ['success' => 1, 'msg' => __('messages.updated_success')]);
     }
