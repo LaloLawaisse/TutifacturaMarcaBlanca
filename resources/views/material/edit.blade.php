@@ -64,6 +64,7 @@
 $(function(){
     var selected = @json($material->productos_linkeados ?? []);
     var productQuantities = @json($product_quantities ?? []);
+    var linkedProducts = @json($linked_products ?? []);
 
     var $productosSelect = $('#productos_linkeados');
     var $productosTableBody = $('#productos_table tbody');
@@ -114,22 +115,14 @@ $(function(){
         }
     });
 
+    // Pre-cargar productos vinculados de forma síncrona (sin AJAX) usando datos del servidor
     if (selected && selected.length) {
-        $.ajax({
-            url: '{{ url('/materials/products-options') }}',
-            data: { q: '' },
-            success: function(data){
-                var $sel = $productosSelect;
-                selected.forEach(function(id){
-                    var match = (data.results || []).find(function(p){ return p.id == id });
-                    var text = match ? match.text : ('#' + id);
-                    var option = new Option(text, id, true, true);
-                    $sel.append(option).trigger('change');
-
-                    var qty = productQuantities[id] !== undefined ? productQuantities[id] : 1;
-                    addProductoRow({id: id, text: text}, qty);
-                });
-            }
+        selected.forEach(function(id) {
+            var text = linkedProducts[id] ? linkedProducts[id] : ('#' + id);
+            var option = new Option(text, id, true, true);
+            $productosSelect.append(option).trigger('change');
+            var qty = productQuantities[id] !== undefined ? productQuantities[id] : 1;
+            addProductoRow({id: id, text: text}, qty);
         });
     }
 });

@@ -162,7 +162,18 @@ class MaterialController extends Controller
             ->pluck('quantity', 'product_id')
             ->toArray();
 
-        return view('material.edit', compact('material', 'product_quantities'));
+        // Nombres de productos vinculados para pre-cargar Select2 sin AJAX
+        $linked_products = [];
+        $linkedIds = is_array($material->productos_linkeados) ? $material->productos_linkeados : [];
+        $linkedIds = array_values(array_unique(array_filter(array_map('intval', $linkedIds))));
+        if (!empty($linkedIds)) {
+            $linked_products = Product::where('business_id', $business_id)
+                ->whereIn('id', $linkedIds)
+                ->pluck('name', 'id')
+                ->toArray();
+        }
+
+        return view('material.edit', compact('material', 'product_quantities', 'linked_products'));
     }
 
     public function update(Request $request, $id)
@@ -230,6 +241,13 @@ class MaterialController extends Controller
                   ]
               );
           }
+
+        // Propagar el nuevo precio a unit_price en la tabla pivot para que
+        // "costo insumos" de los productos se actualice automáticamente
+        DB::table('material_product')
+            ->where('business_id', $business_id)
+            ->where('material_id', $material->ID)
+            ->update(['unit_price' => $material->precio, 'updated_at' => now()]);
 
         return redirect()->action([self::class, 'index'])->with('status', ['success' => 1, 'msg' => __('messages.updated_success')]);
     }
