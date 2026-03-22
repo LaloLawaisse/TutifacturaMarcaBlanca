@@ -15,7 +15,7 @@ class Material extends Model
      * En algunas configuraciones de MySQL/PDO, la columna 'ID' (mayúscula)
      * se retorna como 'id' (minúscula), dejando getKey() en null.
      */
-    public static function newFromBuilder($attributes = [], $connection = null)
+    public function newFromBuilder($attributes = [], $connection = null)
     {
         $attrs = (array) $attributes;
         if (array_key_exists('id', $attrs) && !array_key_exists('ID', $attrs)) {
