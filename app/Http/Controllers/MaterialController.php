@@ -205,15 +205,16 @@ class MaterialController extends Controller
         $newProductIds = is_array($material->productos_linkeados) ? $material->productos_linkeados : [];
         $newProductIds = array_values(array_unique(array_filter(array_map('intval', $newProductIds))));
 
+          $materialId = (int)$id;
+
           // Actualiza JSON products.materiales
-          $this->syncProductsForMaterial($material, $oldProductIds, $newProductIds, $business_id);
+          $this->syncProductsForMaterial($material, $oldProductIds, $newProductIds, $business_id, $materialId);
 
           // Sincroniza pivot para costo de insumos usando cantidades
           $productQuantities = $request->input('productos_qty', []);
-          $businessId = $business_id;
           DB::table('material_product')
-              ->where('business_id', $businessId)
-              ->where('material_id', $material->ID)
+              ->where('business_id', $business_id)
+              ->where('material_id', $materialId)
               ->when(!empty($newProductIds), function ($q) use ($newProductIds) {
                   $q->whereNotIn('product_id', $newProductIds);
               })
@@ -230,9 +231,9 @@ class MaterialController extends Controller
 
               DB::table('material_product')->updateOrInsert(
                   [
-                      'business_id' => $businessId,
+                      'business_id' => $business_id,
                       'product_id'  => $productId,
-                      'material_id' => $material->ID,
+                      'material_id' => $materialId,
                   ],
                   [
                       'quantity'   => $qty,
@@ -244,33 +245,17 @@ class MaterialController extends Controller
 
         // Propagar el nuevo precio a unit_price en la tabla pivot para que
         // "costo insumos" de los productos se actualice automáticamente
-        $pivotRowsBeforeUpdate = DB::table('material_product')
-            ->where('business_id', $business_id)
-            ->where('material_id', $material->ID)
-            ->get();
-
-        \Log::info('[Material Update] Iniciando propagación de precio', [
-            'material_id'   => $material->ID,
-            'material_name' => $material->nombre,
-            'nuevo_precio'  => $material->precio,
-            'business_id'   => $business_id,
-            'newProductIds' => $newProductIds,
-            'pivot_rows_antes' => $pivotRowsBeforeUpdate->map(fn($r) => [
-                'product_id' => $r->product_id,
-                'quantity'   => $r->quantity,
-                'unit_price' => $r->unit_price,
-            ])->toArray(),
-        ]);
-
         $affected = DB::table('material_product')
             ->where('business_id', $business_id)
-            ->where('material_id', $material->ID)
+            ->where('material_id', $materialId)
             ->update(['unit_price' => $material->precio, 'updated_at' => now()]);
 
-        \Log::info('[Material Update] Filas pivot actualizadas', [
-            'material_id' => $material->ID,
-            'affected'    => $affected,
-            'unit_price_seteado' => $material->precio,
+        \Log::info('[Material Update] Precio propagado a pivot', [
+            'material_id'        => $materialId,
+            'material_name'      => $material->nombre,
+            'nuevo_precio'       => $material->precio,
+            'newProductIds'      => $newProductIds,
+            'pivot_rows_updated' => $affected,
         ]);
 
         return redirect()->action([self::class, 'index'])->with('status', ['success' => 1, 'msg' => __('messages.updated_success')]);
@@ -473,8 +458,14 @@ class MaterialController extends Controller
      * @param  int  $business_id
      * @return void
      */
-    protected function syncProductsForMaterial(Material $material, array $oldProductIds, array $newProductIds, $business_id)
+    protected function syncProductsForMaterial(Material $material, array $oldProductIds, array $newProductIds, $business_id, $materialId = null)
     {
+        // $materialId se pasa explícitamente porque $material->ID puede ser null
+        // cuando el modelo es hidratado por findOrFail() en ciertas configuraciones de MySQL/PDO
+        if ($materialId === null) {
+            $materialId = (int) ($material->getAttributes()['ID'] ?? $material->getAttributes()['id'] ?? 0);
+        }
+
         $oldProductIds = array_values(array_unique(array_filter(array_map('intval', $oldProductIds))));
         $newProductIds = array_values(array_unique(array_filter(array_map('intval', $newProductIds))));
 
@@ -492,11 +483,11 @@ class MaterialController extends Controller
             $materialsForProduct = array_values(array_unique(array_filter(array_map('intval', $materialsForProduct))));
 
             if (in_array($product->id, $newProductIds, true)) {
-                if (!in_array($material->ID, $materialsForProduct, true)) {
-                    $materialsForProduct[] = $material->ID;
+                if (!in_array($materialId, $materialsForProduct, true)) {
+                    $materialsForProduct[] = $materialId;
                 }
             } else {
-                $materialsForProduct = array_values(array_diff($materialsForProduct, [$material->ID]));
+                $materialsForProduct = array_values(array_diff($materialsForProduct, [$materialId]));
             }
 
             $product->materiales = $materialsForProduct;
