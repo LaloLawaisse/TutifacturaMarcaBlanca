@@ -250,9 +250,14 @@ class MaterialController extends Controller
         // Propagar el nuevo precio a TODOS los productos que usan este material,
         // buscando tanto en la tabla pivot como en el JSON products.materiales.
         // Si no existe fila en el pivot, se crea con quantity=1 (default).
+        // Buscar productos que tienen este material en su JSON.
+        // Usa JSON_CONTAINS con entero Y con string para cubrir ambos formatos de almacenamiento.
         $productsWithMaterial = DB::table('products')
             ->where('business_id', $business_id)
-            ->whereJsonContains('materiales', $materialId)
+            ->where(function ($q) use ($materialId) {
+                $q->whereJsonContains('materiales', $materialId)
+                  ->orWhereJsonContains('materiales', (string) $materialId);
+            })
             ->pluck('id');
 
         $pivotUpdated = 0;
