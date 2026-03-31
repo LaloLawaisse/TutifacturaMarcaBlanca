@@ -99,14 +99,17 @@
                                 <th>@lang('lang_v1.customer_group')</th>
                                 <th>@lang('lang_v1.payment_method')</th>
                                 <th>@lang('sale.sale')</th>
+                                <th>Costo vendedor</th>
                                 <th>@lang('messages.action')</th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr class="bg-gray font-17 footer-total text-center">
                                 <td colspan="4"><strong>@lang('sale.total'):</strong></td>
-                                <td><span class="display_currency" id="footer_total_amount" data-currency_symbol ="true"></span></td>
-                                <td colspan="4"></td>
+                                <td><span class="display_currency" id="footer_total_amount" data-currency_symbol="true"></span></td>
+                                <td colspan="3"></td>
+                                <td><span class="display_currency" id="footer_total_seller_surcharge" data-currency_symbol="true"></span></td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>

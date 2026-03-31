@@ -2681,7 +2681,8 @@ class ReportController extends Controller
                     'card_transaction_number',
                     'bank_account_number',
                     'transaction_payments.id as DT_RowId',
-                    'CG.name as customer_group'
+                    'CG.name as customer_group',
+                    'transaction_payments.seller_surcharge'
                 )
                 ->groupBy('transaction_payments.id');
     
@@ -2761,6 +2762,12 @@ class ReportController extends Controller
                 ->editColumn('amount', function ($row) {
                     $amount = $row->is_return == 1 ? -1 * $row->amount : $row->amount;
                     return '<span class="paid-amount" data-orig-value="'.$amount.'">'.$this->transactionUtil->num_f($amount, true).'</span>';
+                })
+                ->editColumn('seller_surcharge', function ($row) {
+                    if (empty($row->seller_surcharge) || $row->seller_surcharge == 0) {
+                        return '-';
+                    }
+                    return '<span class="seller-surcharge" data-orig-value="'.$row->seller_surcharge.'">'.$this->transactionUtil->num_f($row->seller_surcharge, true).'</span>';
                 });
     
             // Si usás la variante HTML de created_by_contact con <br>, agrega la columna a rawColumns:
@@ -2769,7 +2776,7 @@ class ReportController extends Controller
             return $dt
                 ->addColumn('action', '<button type="button" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-primary view_payment" data-href="{{ action([\App\Http\Controllers\TransactionPaymentController::class, \'viewPayment\'], [$DT_RowId]) }}">@lang("messages.view")
                     </button> @if(!empty($document))<a href="{{asset("/uploads/documents/" . $document)}}" class="tw-dw-btn tw-dw-btn-xs tw-dw-btn-outline  tw-dw-btn-accent" download=""><i class="fa fa-download"></i> @lang("purchase.download_document")</a>@endif')
-                ->rawColumns(['invoice_no', 'amount', 'method', 'action', 'customer']) // mantener si usás texto plano en created_by_contact
+                ->rawColumns(['invoice_no', 'amount', 'method', 'action', 'customer', 'seller_surcharge'])
                 ->make(true);
         }
     

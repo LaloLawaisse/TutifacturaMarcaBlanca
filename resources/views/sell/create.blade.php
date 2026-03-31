@@ -1042,6 +1042,7 @@
     				@endif
     		    	<div style:"display:none"><b>@lang('sale.total_payable'): </b>
     					<input type="hidden" name="final_total" id="final_total_input">
+    					<input type="hidden" name="seller_surcharge_amount" id="seller_surcharge_amount" value="0">
     					<span id="total_payable">0</span>
     				</div>
     		    </div>
@@ -1908,6 +1909,8 @@
 
             // Calcular recargo por método de pago (primer renglón de pago)
             var surchargeAmount = 0;
+            var sellerSurchargeAmount = 0;
+
             if (typeof $ !== 'undefined') {
                 var payment_settings = $('select#select_location_id').length
                     ? $('select#select_location_id').find(':selected').data('default_payment_accounts')
@@ -1922,7 +1925,13 @@
                     ) {
                         var surcharge_percent = parseFloat(payment_settings[first_payment_type]['surcharge_percent']);
                         if (!isNaN(surcharge_percent) && surcharge_percent !== 0) {
-                            surchargeAmount = baseTotal * (surcharge_percent / 100);
+                            var computed = baseTotal * (surcharge_percent / 100);
+                            // Si el vendedor absorbe el recargo, no se suma al total del cliente
+                            if (payment_settings[first_payment_type]['seller_absorbs']) {
+                                sellerSurchargeAmount = computed;
+                            } else {
+                                surchargeAmount = computed;
+                            }
                         }
                     }
                 }
@@ -1930,6 +1939,12 @@
 
             const finalTotal = baseTotal + surchargeAmount;
             document.getElementById('final_total_input').value = finalTotal.toFixed(2);
+
+            // Guardar recargo del vendedor en campo hidden para que se registre en el pago
+            var sellerSurchargeInput = document.getElementById('seller_surcharge_amount');
+            if (sellerSurchargeInput) {
+                sellerSurchargeInput.value = sellerSurchargeAmount.toFixed(4);
+            }
         }
     
         // Actualizar antes de enviar el formulario

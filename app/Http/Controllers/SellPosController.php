@@ -525,6 +525,16 @@ public function create(Request $request)
 
                 $input['payment'][] = $change_return;
 
+                // Inyectar recargo absorbido por el vendedor en el primer renglón de pago
+                if (!empty($input['seller_surcharge_amount'])) {
+                    foreach ($input['payment'] as $pkey => $p) {
+                        if (empty($p['is_return'])) {
+                            $input['payment'][$pkey]['seller_surcharge'] = (float) $input['seller_surcharge_amount'];
+                            break;
+                        }
+                    }
+                }
+
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
 
                 if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
@@ -1440,6 +1450,16 @@ public function create(Request $request)
                     }
                     $input['payment'][] = $change_return;
 
+                    // Inyectar recargo absorbido por el vendedor en el primer renglón de pago
+                    if (!empty($input['seller_surcharge_amount'])) {
+                        foreach ($input['payment'] as $pkey => $p) {
+                            if (empty($p['is_return'])) {
+                                $input['payment'][$pkey]['seller_surcharge'] = (float) $input['seller_surcharge_amount'];
+                                break;
+                            }
+                        }
+                    }
+
                     if (!$is_direct_sale || auth()->user()->can('sell.payments')) {
                         $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
 
@@ -1600,6 +1620,17 @@ public function create(Request $request)
             $change_return['payment_id'] = $input['change_return_id'];
         }
         $input['payment'][] = $change_return;
+
+        // Inyectar recargo absorbido por el vendedor en el primer renglón de pago
+        if (!empty($input['seller_surcharge_amount'])) {
+            foreach ($input['payment'] as $pkey => $p) {
+                if (empty($p['is_return'])) {
+                    $input['payment'][$pkey]['seller_surcharge'] = (float) $input['seller_surcharge_amount'];
+                    break;
+                }
+            }
+        }
+
         $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
         $this->cashRegisterUtil->updateSellPayments($transaction->status, $transaction, $input['payment']);
 

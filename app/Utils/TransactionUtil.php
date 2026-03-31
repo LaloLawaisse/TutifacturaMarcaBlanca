@@ -788,6 +788,7 @@ class TransactionUtil extends Util
                         'cheque_number' => isset($payment['cheque_number']) ? $payment['cheque_number'] : null,
                         'bank_account_number' => isset($payment['bank_account_number']) ? $payment['bank_account_number'] : null,
                         'note' => isset($payment['note']) ? $payment['note'] : null,
+                        'seller_surcharge' => !empty($payment['seller_surcharge']) ? (float) $payment['seller_surcharge'] : 0,
                         'paid_on' => $paid_on,
                         'created_by' => empty($user_id) ? auth()->user()->id : $user_id,
                         'payment_for' => $transaction->contact_id,

@@ -1293,11 +1293,14 @@ $(document).ready(function() {
             { data: 'customer_group', name: 'customer_group', searchable: false},
             { data: 'method', name: 'method' },
             { data: 'invoice_no', name: 't.invoice_no' },
+            { data: 'seller_surcharge', name: 'transaction_payments.seller_surcharge', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false },
         ],
         fnDrawCallback: function(oSettings) {
             var total_amount = sum_table_col($('#sell_payment_report_table'), 'paid-amount');
             $('#footer_total_amount').text(total_amount);
+            var total_seller_surcharge = sum_table_col($('#sell_payment_report_table'), 'seller-surcharge');
+            $('#footer_total_seller_surcharge').text(total_seller_surcharge);
             __currency_convert_recursively($('#sell_payment_report_table'));
         },
         createdRow: function(row, data, dataIndex) {
