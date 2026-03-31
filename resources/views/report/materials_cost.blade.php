@@ -12,13 +12,13 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
-                    {!! Form::label('materials_cost_start_date', __('report.start_date') . ':') !!}
+                    {!! Form::label('materials_cost_start_date', __('Fecha Inicio') . ':') !!}
                     {!! Form::text('materials_cost_start_date', null, ['class' => 'form-control', 'id' => 'materials_cost_start_date', 'placeholder' => __('report.start_date')]); !!}
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    {!! Form::label('materials_cost_end_date', __('report.end_date') . ':') !!}
+                    {!! Form::label('materials_cost_end_date', __('Fecha Fin') . ':') !!}
                     {!! Form::text('materials_cost_end_date', null, ['class' => 'form-control', 'id' => 'materials_cost_end_date', 'placeholder' => __('report.end_date')]); !!}
                 </div>
             </div>
